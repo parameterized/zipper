@@ -5,9 +5,11 @@ require 'loadassets'
 Camera = require 'camera'
 camera = Camera()
 require 'menu'
+require 'physics'
 require 'world'
 require 'player'
 require 'bullets'
+require 'enemies'
 
 gameState = 'menu'
 time = 0
@@ -22,9 +24,11 @@ function love.update(dt)
 
     elseif gameState == 'playing' then
         time = time + dt
+        physWorld:update(dt)
         world.update(dt)
         player.update(dt)
         bullets.update(dt)
+        enemies.update(dt)
     end
 end
 
@@ -55,6 +59,7 @@ function love.draw()
     elseif gameState == 'playing' then
         camera:set()
         world.draw()
+        enemies.draw()
         bullets.draw()
         player.draw()
         camera:reset()

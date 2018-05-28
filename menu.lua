@@ -55,7 +55,7 @@ end
 
 function menu.draw()
     local mx, my = love.mouse.getPosition()
-    love.graphics.setBackgroundColor(colors.p5:rgb())
+    love.graphics.clear(colors.p5:rgb())
     for _, v in pairs(menu.btns[menu.state]) do
         if not (v.type == 'static') then
             if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then

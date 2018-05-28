@@ -6,7 +6,7 @@ function world.update(dt)
 end
 
 function world.draw()
-    love.graphics.setBackgroundColor(colors.p3:rgb())
+    love.graphics.clear(colors.p3:rgb())
     local freq = 64
     local bx, by, bw, bh = camera:getAABB()
     for i=-1, math.floor(bw/freq)+1 do
