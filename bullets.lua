@@ -11,19 +11,30 @@ function bullets.spawn(fromPlayer, x, y, a, s)
         shape = love.physics.newCircleShape(8)
     }
     obj.fixture = love.physics.newFixture(obj.body, obj.shape, 20)
-    obj.fixture:setUserData{type='bullet'}
+    obj.fixture:setMask(2)
     obj.body:setBullet(true)
     obj.body:setLinearVelocity(math.cos(a)*s, -math.sin(a)*s)
-    table.insert(bullets.container, obj)
+    local id = #bullets.container + 1
+    obj.fixture:setUserData{type='bullet', id=id}
+    bullets.container[id] = obj
 end
 
 function bullets.update(dt)
     for i, v in pairs(bullets.container) do
-        if time - v.spawnTime > v.life then
-            v.fixture:destroy()
-            v.body:destroy()
-            bullets.container[i] = nil
-        end
+        repeat
+            if v.destroy then
+                v.fixture:destroy()
+                v.body:destroy()
+                bullets.container[i] = nil
+                break
+            end
+            if time - v.spawnTime > v.life then
+                v.fixture:destroy()
+                v.body:destroy()
+                bullets.container[i] = nil
+                break
+            end
+        until true
     end
 end
 

@@ -10,10 +10,12 @@ require 'world'
 require 'player'
 require 'bullets'
 require 'enemies'
+require 'hud'
 
 gameState = 'menu'
 time = 0
 showDebug = false
+freeFire = false
 
 function love.load()
 
@@ -50,6 +52,8 @@ function love.keypressed(k, scancode, isrepeat)
     end
     if k == 'f1' then
         showDebug = not showDebug
+    elseif k == 'f2' then
+        freeFire = not freeFire
     end
 end
 
@@ -63,6 +67,7 @@ function love.draw()
         bullets.draw()
         player.draw()
         camera:reset()
+        hud.draw()
     end
     if showDebug then
         love.graphics.setColor(0, 0.8, 0)

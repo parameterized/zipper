@@ -1,12 +1,25 @@
 
 player = {}
 
+player.score = 0
+player.fireRate = 5
+player.lastFireTime = 0
+
 player.body = love.physics.newBody(physWorld, 0, 0, 'dynamic')
 player.shape = love.physics.newRectangleShape(50, 50)
 player.fixture = love.physics.newFixture(player.body, player.shape, 1)
 player.fixture:setUserData{type='player'}
+player.fixture:setCategory(2)
+player.fixture:setMask(2)
 player.body:setLinearDamping(10)
 player.body:setAngularDamping(10)
+
+function player.getHandPos()
+    local wmx, wmy = camera:screen2world(love.mouse.getPosition())
+    local a = math.atan2(wmx - player.body:getX(), wmy - player.body:getY()) - math.pi/2
+    local d = 40*(1/math.cos((a+math.pi/4-player.body:getAngle())%(math.pi/2) - math.pi/4))
+    return player.body:getX() + math.cos(a)*d, player.body:getY() - math.sin(a)*d
+end
 
 function player.update(dt)
     local mx, my = love.mouse.getPosition()
@@ -23,32 +36,25 @@ function player.update(dt)
 
     player.body:applyTorque(-player.body:getAngle()*1e5)
 
-    --camera.x = math.floor(player.body:getX() + math.floor((mx-ssx/2)/6) + (mx-ssx/2 < 0 and 1 or 0))
-	--camera.y = math.floor(player.body:getY() + math.floor((my-ssy/2)/6) + (my-ssy/2 < 0 and 1 or 0))
+    if love.mouse.isDown(1) and (time - player.lastFireTime > 1/player.fireRate or freeFire) then
+        local wmx, wmy = camera:screen2world(love.mouse.getPosition())
+        local a = math.atan2(wmx - player.body:getX(), wmy - player.body:getY()) - math.pi/2
+        local hx, hy = player.getHandPos()
+        bullets.spawn(true, hx, hy, a, 1200)
+        player.lastFireTime = time
+    end
+
     camera.x = player.body:getX() + math.floor((mx-ssx/2)/6)
     camera.y = player.body:getY() + math.floor((my-ssy/2)/6)
 end
 
 function player.mousepressed(mx, my, btn)
-    local mx, my = camera:screen2world(mx, my)
-    local a = math.atan2(mx - player.body:getX(), my - player.body:getY()) - math.pi/2
-    local d = 40*(1/math.cos((a+math.pi/4-player.body:getAngle())%(math.pi/2) - math.pi/4))
-    bullets.spawn(true, player.body:getX() + math.cos(a)*d, player.body:getY() - math.sin(a)*d, a, 1200)
+
 end
 
 function player.draw()
     love.graphics.setColor(colors.p2:rgb())
     love.graphics.polygon('fill', player.body:getWorldPoints(player.shape:getPoints()))
-    local mx, my = camera:screen2world(love.mouse.getPosition())
-    local a = math.atan2(mx - player.body:getX(), my - player.body:getY()) - math.pi/2
-    local d = 40*(1/math.cos((a+math.pi/4-player.body:getAngle())%(math.pi/2) - math.pi/4))
-    print(d)
-    love.graphics.circle('fill', player.body:getX() + math.cos(a)*d, player.body:getY() - math.sin(a)*d, 10)
-    --[[
-    love.graphics.push()
-    love.graphics.translate(math.floor(player.body:getX()), math.floor(player.body:getY()))
-    love.graphics.rotate(-a)
-    love.graphics.rectangle('fill', 0, -8, 40, 16)
-    love.graphics.pop()
-    ]]
+    local hx, hy = player.getHandPos()
+    love.graphics.circle('fill', hx, hy, 10)
 end
