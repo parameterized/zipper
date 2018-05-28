@@ -22,7 +22,6 @@ colors = {
     p5 = Color('433E3F')
 }
 colors.p1_1 = colors.p1:clone():lighten(1.5)
-colors.p3_1 = colors.p3:clone():lighten(0.5)
-colors.p3_2 = colors.p3:clone():lighten(0.8)
+colors.p3_1 = colors.p3:clone():lighten(0.8)
 colors.p5_1 = colors.p5:clone():lighten(0.5)
 colors.p5_2 = colors.p5:clone():lighten(0.8)
