@@ -4,18 +4,17 @@ require 'utils'
 require 'loadassets'
 Camera = require 'camera'
 camera = Camera()
+require 'debugger'
 require 'menu'
 require 'physics'
 require 'world'
 require 'player'
 require 'bullets'
-require 'enemies'
+require 'entities'
 require 'hud'
 
 gameState = 'menu'
 time = 0
-showDebug = false
-freeFire = false
 
 function love.load()
 
@@ -26,11 +25,12 @@ function love.update(dt)
 
     elseif gameState == 'playing' then
         time = time + dt
-        physWorld:update(dt)
+        physics.world:update(dt)
+        physics.postUpdate()
         world.update(dt)
         player.update(dt)
         bullets.update(dt)
-        enemies.update(dt)
+        entities.update(dt)
     end
 end
 
@@ -38,7 +38,16 @@ function love.mousepressed(x, y, btn, isTouch)
     if gameState == 'menu' then
         menu.mousepressed(x, y, btn)
     elseif gameState == 'playing' then
+        love.mouse.setCursor(cursors.crosshairDown)
         player.mousepressed(x, y, btn)
+    end
+end
+
+function love.mousereleased(x, y, btn, isTouch)
+    if gameState == 'menu' then
+
+    elseif gameState == 'playing' then
+        love.mouse.setCursor(cursors.crosshairUp)
     end
 end
 
@@ -48,12 +57,21 @@ function love.keypressed(k, scancode, isrepeat)
     elseif gameState == 'playing' then
         if k == 'escape' then
             gameState = 'menu'
+            love.mouse.setCursor()
+            love.mouse.setGrabbed(false)
         end
     end
     if k == 'f1' then
-        showDebug = not showDebug
+        debugger.show = not debugger.show
     elseif k == 'f2' then
-        freeFire = not freeFire
+        player.freeFire = not player.freeFire
+    elseif k == 'f3' then
+        for _, v in pairs(entities.container) do
+            local def = entities.defs[v.type]
+            if v.type == 'hex' then
+                v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
+            end
+        end
     end
 end
 
@@ -63,15 +81,13 @@ function love.draw()
     elseif gameState == 'playing' then
         camera:set()
         world.draw()
-        enemies.draw()
+        entities.draw()
         bullets.draw()
         player.draw()
         camera:reset()
         hud.draw()
     end
-    if showDebug then
-        love.graphics.setColor(0, 0.8, 0)
-        love.graphics.setFont(fonts.f14)
-        love.graphics.print(love.timer.getFPS(), 4, 2)
+    if debugger.show then
+        debugger.draw()
     end
 end

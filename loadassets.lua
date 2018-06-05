@@ -5,6 +5,8 @@ ssy = love.graphics.getHeight()
 love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
 
+love.graphics.setDefaultFilter('nearest', 'nearest')
+
 fonts = {
     f14 = love.graphics.newFont(14),
     f18 = love.graphics.newFont(18),
@@ -25,3 +27,10 @@ colors.p1_1 = colors.p1:clone():lighten(1.5)
 colors.p3_1 = colors.p3:clone():lighten(0.8)
 colors.p5_1 = colors.p5:clone():lighten(0.5)
 colors.p5_2 = colors.p5:clone():lighten(0.8)
+
+cursors = {
+    crosshairUp = love.mouse.newCursor(
+        love.image.newImageData('gfx/cursors/crosshairUp.png'), 16, 16),
+    crosshairDown = love.mouse.newCursor(
+        love.image.newImageData('gfx/cursors/crosshairDown.png'), 16, 16)
+}

@@ -34,6 +34,8 @@ function menu.mousepressed(mx, my, btn)
         if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
             if v.id == 'play' then
                 gameState = 'playing'
+                love.mouse.setCursor(cursors.crosshairUp)
+                love.mouse.setGrabbed(true)
             elseif v.id == 'options' then
                 menu.state = 'options'
             elseif v.id == 'exit' then

@@ -3,7 +3,7 @@
 
 Uses Love2D version 11.1.0
 
-![](https://i.imgur.com/Sgtr70L.png)
+![](https://i.imgur.com/TZyI6Or.gif)
 
 ## Running
 Windows builds can be found on the [releases](https://github.com/parameterized/zipper/releases) page
@@ -14,5 +14,8 @@ If you're on Windows, the easiest way to run is to drag the folder containing ma
 
 ## Controls
 - WASD to move
-- Left mouse button to shoot
+- Left Shift to sprint
+- Left Mouse Button to shoot
 - F1 to show debug info
+- F2 for free fire
+- F3 to push around enemies

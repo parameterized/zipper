@@ -4,8 +4,10 @@ player = {}
 player.score = 0
 player.fireRate = 5
 player.lastFireTime = 0
+player.freeFire = false
+player.spd = 2e3
 
-player.body = love.physics.newBody(physWorld, 0, 0, 'dynamic')
+player.body = love.physics.newBody(physics.world, 0, 0, 'dynamic')
 player.shape = love.physics.newRectangleShape(50, 50)
 player.fixture = love.physics.newFixture(player.body, player.shape, 1)
 player.fixture:setUserData{type='player'}
@@ -29,14 +31,15 @@ function player.update(dt)
 	dx = dx + (love.keyboard.isDown('a') and -1 or 0)
 	dy = dy + (love.keyboard.isDown('w') and -1 or 0)
 	dy = dy + (love.keyboard.isDown('s') and 1 or 0)
+    local spd = player.spd*(love.keyboard.isDown('lshift') and 2.5 or 1)
     if not (dx == 0 and dy == 0) then
         local a = math.atan2(dx, dy) - math.pi/2
-        player.body:applyForce(math.cos(a)*2e3, -math.sin(a)*2e3)
+        player.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
     end
 
     player.body:applyTorque(-player.body:getAngle()*1e5)
 
-    if love.mouse.isDown(1) and (time - player.lastFireTime > 1/player.fireRate or freeFire) then
+    if love.mouse.isDown(1) and (time - player.lastFireTime > 1/player.fireRate or player.freeFire) then
         local wmx, wmy = camera:screen2world(love.mouse.getPosition())
         local a = math.atan2(wmx - player.body:getX(), wmy - player.body:getY()) - math.pi/2
         local hx, hy = player.getHandPos()
