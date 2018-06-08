@@ -51,24 +51,36 @@ function love.mousereleased(x, y, btn, isTouch)
     end
 end
 
-function love.keypressed(k, scancode, isrepeat)
-    if gameState == 'menu' then
-        menu.keypressed(k)
-    elseif gameState == 'playing' then
-        if k == 'escape' then
-            gameState = 'menu'
-            love.mouse.setCursor()
-            love.mouse.setGrabbed(false)
-        end
+function love.textinput(t)
+    if debugger.console.active then
+        debugger.console.textinput(t)
+    else
+
     end
-    if k == 'f1' then
-        debugger.show = not debugger.show
-    elseif k == 'f2' then
-        player.freeFire = not player.freeFire
-    elseif k == 'f3' then
-        for _, v in pairs(entities.container) do
-            local def = entities.defs[v.type]
-            if v.type == 'hex' then
+end
+
+function love.keypressed(k, scancode, isrepeat)
+    if k == '`' and not debugger.console.active then
+        debugger.console.active = true
+    end
+    if debugger.console.active then
+        debugger.console.keypressed(k, scancode, isrepeat)
+    else
+        if gameState == 'menu' then
+            menu.keypressed(k)
+        elseif gameState == 'playing' then
+            if k == 'escape' then
+                gameState = 'menu'
+                love.mouse.setCursor()
+                love.mouse.setGrabbed(false)
+            end
+        end
+        if k == 'f1' then
+            debugger.show = not debugger.show
+        elseif k == 'f2' then
+            player.freeFire = not player.freeFire
+        elseif k == 'f3' then
+            for _, v in pairs(entities.container['hex'] or {}) do
                 v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
             end
         end
@@ -87,7 +99,5 @@ function love.draw()
         camera:reset()
         hud.draw()
     end
-    if debugger.show then
-        debugger.draw()
-    end
+    debugger.draw()
 end

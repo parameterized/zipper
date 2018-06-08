@@ -18,6 +18,7 @@ If you're on Windows, the easiest way to run is to drag the folder containing ma
 - WASD to move
 - Left Shift to sprint
 - Left Mouse Button to shoot
+- ` (tilde) to open console (no commands yet)
 - F1 to show debug info
 - F2 for free fire
 - F3 to push around enemies

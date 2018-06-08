@@ -2,30 +2,31 @@
 local base = require 'entityDefs._base'
 local hex = base:new()
 
+hex.type = 'hex'
+hex.static = false
+hex.influenceRadius = 40
+hex.enemy = true
+
 function hex:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
-    o.type = 'hex'
     o.x = o.x or 0
     o.y = o.y or 0
     o.hp = 6
-    o.angle = math.random()*2*math.pi
+    o.angle = hash2(o.x + 1/3, o.y)*2*math.pi
     return o
 end
 
 function hex:spawn()
-    self.destroyed = false
     self.body = love.physics.newBody(physics.world, self.x, self.y, 'dynamic')
     self.shape = love.physics.newCircleShape(40)
     self.fixture = love.physics.newFixture(self.body, self.shape, 1)
+    self.fixture:setUserData(self)
     self.body:setLinearDamping(10)
     self.body:setAngularDamping(10)
     self.body:setAngle(self.angle)
-    local id = #entities.container + 1
-    self.id = id
-    self.fixture:setUserData{type='enemy', id=id}
-    entities.container[id] = self
+    base.spawn(self)
 end
 
 function hex:update(dt)
@@ -58,7 +59,7 @@ function hex:damage(d)
     self.hp = self.hp - d
     if self.hp <= 0 and not self.destroyed then
         player.score = player.score + 1
-        entities.spawn('hex', self.x + (math.random()*2 - 1)*ssx/2, self.y + (math.random()*2 - 1)*ssy/2)
+        hex:new{x=self.x + (math.random()*2 - 1)*ssx/2, y=self.y + (math.random()*2 - 1)*ssy/2}:spawn()
         self:destroy()
     end
 end
@@ -77,17 +78,6 @@ end
 function hex:unfreeze()
     self.body:setType('dynamic')
     base.unfreeze(self)
-end
-
---[[
-return setmetatable(
-    {new = function(_, ...) return hex:new(...) end},
-    {__call = function(_, ...) return hex:new(...) end}
-)
-]]
-
-function hex.__call(_, ...)
-    return hex:new(...)
 end
 
 return hex
