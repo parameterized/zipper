@@ -1,4 +1,12 @@
 
+function safeIndex(t, ...)
+	for _, k in pairs({...}) do
+		if not (type(t) == 'table') then return nil end
+		t = t[k]
+	end
+	return t
+end
+
 function clamp(x, a, b)
 	if a < b then
 		return math.min(math.max(x, a), b)

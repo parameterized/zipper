@@ -1,9 +1,11 @@
 
-local base = {
-    type = 'base',
-    static = true,
-    influenceRadius = 10
-}
+local base = {}
+
+-- entities.defs[type]
+base.type = 'base'
+base.static = true
+-- max collider radius
+base.influenceRadius = 10
 
 function base:new(o)
     o = o or {}
@@ -16,11 +18,13 @@ end
 
 function base:spawn()
     local type = self.type
-    entities.container[type] = entities.container[type] or {}
-    local id = #entities.container[type] + 1
-    entities.container[type][id] = self
-    self.destroyed = false
+    local container = self.static and entities.static.container or entities.dynamic.container
+    container[type] = container[type] or {}
+    local id = #container[type] + 1
     self.id = id
+    self.destroyed = false
+    container[type][id] = self
+    self:freeze()
 end
 
 function base:update(dt)
@@ -33,7 +37,8 @@ function base:draw()
 end
 
 function base:destroy()
-    entities.container[self.type][self.id] = nil
+    local container = self.static and entities.static.container or entities.dynamic.container
+    container[self.type][self.id] = nil
     self.destroyed = true
 end
 
@@ -50,17 +55,19 @@ function base:cull()
     local cs = entities.chunkSize
     local chunk = math.floor(self.x/cs) .. ',' .. math.floor(self.y/cs)
     local type = self.type
-    entities.culledContainer[chunk] = entities.culledContainer[chunk] or {}
-    entities.culledContainer[chunk][type] = entities.culledContainer[chunk][type] or {}
-    local id = #entities.culledContainer[chunk][type] + 1
-    entities.culledContainer[chunk][type][id] = self
+    local container = self.static and entities.static.culledContainer or entities.dynamic.culledContainer
+    container[chunk] = container[chunk] or {}
+    container[chunk][type] = container[chunk][type] or {}
+    local id = #container[chunk][type] + 1
     self.culledChunk = chunk
     self.id = id
     self.culled = true
+    container[chunk][type][id] = self
 end
 
 function base:uncull()
-    entities.culledContainer[self.culledChunk][self.type][self.id] = nil
+    local container = self.static and entities.static.culledContainer or entities.dynamic.culledContainer
+    container[self.culledChunk][self.type][self.id] = nil
     self.culledChunk = nil
     self:spawn()
     self.culled = false

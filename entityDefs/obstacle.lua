@@ -4,8 +4,7 @@ local obstacle = base:new()
 
 obstacle.type = 'obstacle'
 obstacle.static = true
--- max with chunkSize
-obstacle.influenceRadius = 140
+obstacle.influenceRadius = 170
 
 function obstacle:new(o)
     o = o or {}
@@ -13,14 +12,15 @@ function obstacle:new(o)
     self.__index = self
     o.x = o.x or 0
     o.y = o.y or 0
-    o.width = 280
-    o.angle = hash2(o.x + 1/3, o.y)*2*math.pi
+    o.width = o.width or 320
+    o.height = o.height or 40
+    o.angle = o.angle or hash2(o.x + 1/3, o.y)*2*math.pi
     return o
 end
 
 function obstacle:spawn()
     self.body = love.physics.newBody(physics.world, self.x, self.y, 'static')
-    self.shape = love.physics.newRectangleShape(self.width, 40)
+    self.shape = love.physics.newRectangleShape(self.width, self.height)
     self.fixture = love.physics.newFixture(self.body, self.shape, 1)
     self.fixture:setUserData(self)
     self.body:setAngle(self.angle)

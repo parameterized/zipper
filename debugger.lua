@@ -43,21 +43,44 @@ function debugger.console.submit()
 	debugger.console.val = ''
 end
 
-function debugger.draw()
+function debugger.setVals()
     debugger.logVal('FPS', love.timer.getFPS())
     debugger.log(time)
+
     local ctr = 0
-    for _, typev in pairs(entities.container) do
+    for _, typev in pairs(entities.static.container) do
         for _, _ in pairs(typev) do ctr = ctr + 1 end
     end
-    debugger.logVal('entity container count - ', ctr)
+    debugger.logVal('static entity container count', ctr)
     ctr = 0
-    for _, chunkv in pairs(entities.culledContainer) do
+    for _, chunkv in pairs(entities.static.culledContainer) do
         for _, typev in pairs(chunkv) do
             for _, _ in pairs(typev) do ctr = ctr + 1 end
         end
     end
-    debugger.logVal('entity culled container count - ', ctr)
+    debugger.logVal('static entity culled container count', ctr)
+
+    ctr = 0
+    for _, typev in pairs(entities.dynamic.container) do
+        for _, _ in pairs(typev) do ctr = ctr + 1 end
+    end
+    debugger.logVal('dynamic entity container count', ctr)
+    ctr = 0
+    for _, typev in pairs(entities.dynamic.frozenContainer) do
+        for _, _ in pairs(typev) do ctr = ctr + 1 end
+    end
+    debugger.logVal('dynamic entity frozen container count', ctr)
+    ctr = 0
+    for _, chunkv in pairs(entities.dynamic.culledContainer) do
+        for _, typev in pairs(chunkv) do
+            for _, _ in pairs(typev) do ctr = ctr + 1 end
+        end
+    end
+    debugger.logVal('dynamic entity culled container count', ctr)
+end
+
+function debugger.draw()
+    debugger.setVals()
 
     if debugger.show then
 		love.graphics.setFont(fonts.f14)

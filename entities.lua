@@ -1,19 +1,38 @@
 
 entities = {
-    container = {},
-    culledContainer = {},
     defs = {},
+    static = {
+        container = {},
+        culledContainer = {}
+    },
+    dynamic = {
+        container = {},
+        frozenContainer = {},
+        culledContainer = {}
+    },
     loadedChunks = {}
 }
--- entities.container[type][id]
--- entities.culledContainer[chunk][type][id]
-
-entities.influenceMargin = 10
--- should be larger than max entity influence radius * 3.5 (much larger is fine)
-entities.chunkSize = 512
+-- entities.dynamic.container[etype][id]
+-- entities.dynamic.frozenContainer[etype][id]
+-- entities.dynamic.culledContainer[chunk][etype][id]
 
 entities.defs.hex = require 'entityDefs.hex'
 entities.defs.obstacle = require 'entityDefs.obstacle'
+
+entities.chunkSize = 512
+-- max entity collider radius should be chunkSize/3 (170.66)
+entities.staticInfluenceRadius = 0 --170
+entities.dynamicInfluenceRadius = 0 --40
+for _, v in pairs(entities.defs) do
+    if v.static then
+        entities.staticInfluenceRadius = math.max(entities.staticInfluenceRadius, v.influenceRadius)
+    else
+        entities.dynamicInfluenceRadius = math.max(entities.dynamicInfluenceRadius, v.influenceRadius)
+    end
+end
+entities.staticCullRadius = entities.dynamicInfluenceRadius*4 + entities.staticInfluenceRadius
+entities.dynamicFreezeRadius = entities.dynamicInfluenceRadius
+entities.dynamicCullRadius = entities.dynamicInfluenceRadius*3
 
 function entities.loadChunk(i, j)
     for k=1, 3 do
@@ -26,73 +45,118 @@ function entities.loadChunk(i, j)
         local y = (j + hash2(i + 2/3, j + 2/3))*entities.chunkSize
         entities.defs.obstacle:new{x=x, y=y}:spawn()
     end
+    entities.loadedChunks[i .. ',' .. j] = true
 end
 
 function entities.update(dt)
     local camBX, camBY, camBW, camBH = camera:getAABB()
 
-    local chunkBX = camBX - entities.chunkSize
-    local chunkBY = camBY - entities.chunkSize
-    local chunkBW = camBW + entities.chunkSize*2
-    local chunkBH = camBH + entities.chunkSize*2
+    local activeRadius = entities.staticCullRadius
+    local chunkBX = camBX - activeRadius
+    local chunkBY = camBY - activeRadius
+    local chunkBW = camBW + activeRadius*2
+    local chunkBH = camBH + activeRadius*2
     local activeChunks = {}
     for i=math.floor(chunkBX/entities.chunkSize), math.floor((chunkBX + chunkBW)/entities.chunkSize) do
         for j=math.floor(chunkBY/entities.chunkSize), math.floor((chunkBY + chunkBH)/entities.chunkSize) do
             activeChunks[i .. ',' .. j] = true
             if not entities.loadedChunks[i .. ',' .. j] then
                 entities.loadChunk(i, j)
-                entities.loadedChunks[i .. ',' .. j] = true
             end
         end
     end
 
-    for type, _ in pairs(entities.defs) do
-        local influenceRadius = entities.defs[type].influenceRadius + entities.influenceMargin
-        local freezeRadius = influenceRadius*2.5
-        local cullRadius = influenceRadius*3.5
+    local staticCullBX = camBX - entities.staticCullRadius
+    local staticCullBY = camBY - entities.staticCullRadius
+    local staticCullBW = camBW + entities.staticCullRadius*2
+    local staticCullBH = camBH + entities.staticCullRadius*2
 
-        local cullBX = camBX - cullRadius
-        local cullBY = camBY - cullRadius
-        local cullBW = camBW + cullRadius*2
-        local cullBH = camBH + cullRadius*2
+    local dynamicCullBX = camBX - entities.dynamicCullRadius
+    local dynamicCullBY = camBY - entities.dynamicCullRadius
+    local dynamicCullBW = camBW + entities.dynamicCullRadius*2
+    local dynamicCullBH = camBH + entities.dynamicCullRadius*2
 
-        local ctr = 0
+    local dynamicFreezeBX = camBX - entities.dynamicFreezeRadius
+    local dynamicFreezeBY = camBY - entities.dynamicFreezeRadius
+    local dynamicFreezeBW = camBW + entities.dynamicFreezeRadius*2
+    local dynamicFreezeBH = camBH + entities.dynamicFreezeRadius*2
+
+    local uncullCheckCtr = 0
+    for type, typev in pairs(entities.defs) do
+        local cullBX, cullBY, cullBW, cullBH
+        local freezeBX, freezeBY, freezeBW, freezeBH
+        local culledContainer, container
+        if typev.static then
+            cullBX = camBX - entities.staticCullRadius
+            cullBY = camBY - entities.staticCullRadius
+            cullBW = camBW + entities.staticCullRadius*2
+            cullBH = camBH + entities.staticCullRadius*2
+
+            culledContainer = entities.static.culledContainer
+            container = entities.static.container
+        else
+            cullBX = camBX - entities.dynamicCullRadius
+            cullBY = camBY - entities.dynamicCullRadius
+            cullBW = camBW + entities.dynamicCullRadius*2
+            cullBH = camBH + entities.dynamicCullRadius*2
+
+            freezeBX = camBX - entities.dynamicFreezeRadius
+            freezeBY = camBY - entities.dynamicFreezeRadius
+            freezeBW = camBW + entities.dynamicFreezeRadius*2
+            freezeBH = camBH + entities.dynamicFreezeRadius*2
+
+            culledContainer = entities.dynamic.culledContainer
+            container = entities.dynamic.container
+        end
+
         for chunk, _ in pairs(activeChunks) do
-            if entities.culledContainer[chunk] then
-                for _, v in pairs(entities.culledContainer[chunk][type] or {}) do
-                    ctr = ctr + 1
-                    if v.x > cullBX and v.x < cullBX + cullBW and v.y > cullBY and v.y < cullBY + cullBH then
-                        v:uncull()
-                    end
+            -- culledContainer[chunk][type]
+            for _, v in pairs(safeIndex(culledContainer, chunk, type) or {}) do
+                uncullCheckCtr = uncullCheckCtr + 1
+                if v.x > staticCullBX and v.x < staticCullBX + staticCullBW
+                and v.y > staticCullBY and v.y < staticCullBY + staticCullBH then
+                    v:uncull()
                 end
             end
         end
-        debugger.logVal('entity uncull check count - ', ctr)
 
-        local freezeBX = camBX - freezeRadius
-        local freezeBY = camBY - freezeRadius
-        local freezeBW = camBW + freezeRadius*2
-        local freezeBH = camBH + freezeRadius*2
-        for _, v in pairs(entities.container[type] or {}) do
-            repeat
-                if v.x < cullBX or v.x > cullBX + cullBW or v.y < cullBY or v.y > cullBY + cullBH then
-                    if not v.culled then v:cull() end
-                    break
-                elseif (v.x < freezeBX or v.x > freezeBX + freezeBW or v.y < freezeBY or v.y > freezeBY + freezeBH) then
-                    if not v.frozen then v:freeze() end
-                    break
-                else
-                    if v.frozen then v:unfreeze() end
-                end
-                v:update(dt)
-            until true
+        if typev.static then
+            for _, v in pairs(container[type] or {}) do
+                repeat
+                    if v.x < cullBX or v.x > cullBX + cullBW or v.y < cullBY or v.y > cullBY + cullBH then
+                        if not v.culled then v:cull() end
+                        break
+                    end
+                until true
+            end
+        else
+            for _, v in pairs(container[type] or {}) do
+                repeat
+                    if v.x < cullBX or v.x > cullBX + cullBW or v.y < cullBY or v.y > cullBY + cullBH then
+                        if not v.culled then v:cull() end
+                        break
+                    elseif (v.x < freezeBX or v.x > freezeBX + freezeBW or v.y < freezeBY or v.y > freezeBY + freezeBH) then
+                        if not v.frozen then v:freeze() end
+                        break
+                    else
+                        if v.frozen then v:unfreeze() end
+                    end
+                    v:update(dt)
+                until true
+            end
         end
     end
+    debugger.logVal('entity uncull check count', uncullCheckCtr)
 end
 
 function entities.draw()
-    for type, _ in pairs(entities.defs) do
-        for _, v in pairs(entities.container[type] or {}) do
+    for type, typev in pairs(entities.static.container) do
+        for _, v in pairs(typev) do
+            v:draw()
+        end
+    end
+    for type, typev in pairs(entities.dynamic.container) do
+        for _, v in pairs(typev) do
             v:draw()
         end
     end

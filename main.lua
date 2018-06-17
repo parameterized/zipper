@@ -4,6 +4,7 @@ require 'utils'
 require 'loadassets'
 Camera = require 'camera'
 camera = Camera()
+debugCam = Camera()
 require 'debugger'
 require 'menu'
 require 'physics'
@@ -80,7 +81,7 @@ function love.keypressed(k, scancode, isrepeat)
         elseif k == 'f2' then
             player.freeFire = not player.freeFire
         elseif k == 'f3' then
-            for _, v in pairs(entities.container['hex'] or {}) do
+            for _, v in pairs(entities.dynamic.container['hex'] or {}) do
                 v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
             end
         end
@@ -91,12 +92,18 @@ function love.draw()
     if gameState == 'menu' then
         menu.draw()
     elseif gameState == 'playing' then
-        camera:set()
+        local activeCam = camera
+        if debugger.show then
+            activeCam = debugCam
+            debugCam.x, debugCam.y = camera.x, camera.y
+            debugCam.scale = 0.5
+        end
+        activeCam:set()
         world.draw()
         entities.draw()
         bullets.draw()
         player.draw()
-        camera:reset()
+        activeCam:reset()
         hud.draw()
     end
     debugger.draw()

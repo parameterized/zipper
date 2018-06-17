@@ -13,8 +13,8 @@ function hex:new(o)
     self.__index = self
     o.x = o.x or 0
     o.y = o.y or 0
-    o.hp = 6
-    o.angle = hash2(o.x + 1/3, o.y)*2*math.pi
+    o.hp = o.hp or 6
+    o.angle = o.angle or hash2(o.x + 1/3, o.y)*2*math.pi
     return o
 end
 
@@ -59,7 +59,9 @@ function hex:damage(d)
     self.hp = self.hp - d
     if self.hp <= 0 and not self.destroyed then
         player.score = player.score + 1
-        hex:new{x=self.x + (math.random()*2 - 1)*ssx/2, y=self.y + (math.random()*2 - 1)*ssy/2}:spawn()
+        local x = self.x + (math.random()*2 - 1)*ssx/2
+        local y = self.y + (math.random()*2 - 1)*ssy/2
+        hex:new{x=x, y=y}:spawn()
         self:destroy()
     end
 end
