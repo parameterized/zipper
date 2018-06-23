@@ -3,8 +3,8 @@ Color = require 'color'
 require 'utils'
 require 'loadassets'
 Camera = require 'camera'
-camera = Camera()
-debugCam = Camera()
+camera = Camera{ssx=ssx, ssy=ssy}
+debugCam = Camera{ssx=ssx, ssy=ssy}
 require 'debugger'
 require 'menu'
 require 'physics'
@@ -36,6 +36,8 @@ function love.update(dt)
 end
 
 function love.mousepressed(x, y, btn, isTouch)
+    x = x/graphicsScale
+    y = y/graphicsScale
     if gameState == 'menu' then
         menu.mousepressed(x, y, btn)
     elseif gameState == 'playing' then
@@ -45,6 +47,8 @@ function love.mousepressed(x, y, btn, isTouch)
 end
 
 function love.mousereleased(x, y, btn, isTouch)
+    x = x/graphicsScale
+    y = y/graphicsScale
     if gameState == 'menu' then
 
     elseif gameState == 'playing' then
@@ -89,6 +93,8 @@ function love.keypressed(k, scancode, isrepeat)
 end
 
 function love.draw()
+    love.graphics.push()
+    love.graphics.scale(graphicsScale)
     if gameState == 'menu' then
         menu.draw()
     elseif gameState == 'playing' then
@@ -107,4 +113,9 @@ function love.draw()
         hud.draw()
     end
     debugger.draw()
+    local mx, my = love.mouse.getPosition()
+    mx = mx/graphicsScale
+    my = my/graphicsScale
+    local wmx, wmy = camera:screen2world(mx, my)
+    love.graphics.pop()
 end

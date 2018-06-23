@@ -17,14 +17,20 @@ player.body:setLinearDamping(10)
 player.body:setAngularDamping(10)
 
 function player.getHandPos()
-    local wmx, wmy = camera:screen2world(love.mouse.getPosition())
+    local mx, my = love.mouse.getPosition()
+    mx = mx/graphicsScale
+    my = my/graphicsScale
+    local wmx, wmy = camera:screen2world(mx, my)
     local a = math.atan2(wmx - player.body:getX(), wmy - player.body:getY()) - math.pi/2
-    local d = 40*(1/math.cos((a+math.pi/4-player.body:getAngle())%(math.pi/2) - math.pi/4))
+    local d = 40*(1/math.cos((a+math.pi/4+player.body:getAngle())%(math.pi/2) - math.pi/4))
     return player.body:getX() + math.cos(a)*d, player.body:getY() - math.sin(a)*d
 end
 
 function player.update(dt)
     local mx, my = love.mouse.getPosition()
+    mx = mx/graphicsScale
+    my = my/graphicsScale
+    local wmx, wmy = camera:screen2world(mx, my)
 
     local dx, dy = 0, 0
 	dx = dx + (love.keyboard.isDown('d') and 1 or 0)
@@ -40,7 +46,6 @@ function player.update(dt)
     player.body:applyTorque(-player.body:getAngle()*1e5)
 
     if love.mouse.isDown(1) and (time - player.lastFireTime > 1/player.fireRate or player.freeFire) then
-        local wmx, wmy = camera:screen2world(love.mouse.getPosition())
         local a = math.atan2(wmx - player.body:getX(), wmy - player.body:getY()) - math.pi/2
         local hx, hy = player.getHandPos()
         bullets.spawn(true, hx, hy, a, 1200)

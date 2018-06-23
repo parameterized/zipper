@@ -1,6 +1,7 @@
 
-ssx = love.graphics.getWidth()
-ssy = love.graphics.getHeight()
+ssx, ssy = love.graphics.getDimensions()
+-- draw targeting 1280x720, rescale to fit chosen resolution (not best solution but easy)
+graphicsScale = 1
 
 love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())

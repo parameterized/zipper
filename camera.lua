@@ -6,6 +6,8 @@ local function new(opts)
 	local obj = {
 		x=0, y=0, scale=1, rotation=0
 	}
+	-- screen size x, y
+	obj.ssx, obj.ssy = love.graphics.getDimensions()
 	opts = opts or {}
 	for k, v in pairs(opts) do obj[k] = v end
 	local cam = setmetatable(obj, camera)
@@ -21,9 +23,8 @@ function rotate(x, y, a)
 end
 
 function camera:set()
-	local ssx, ssy = love.graphics.getDimensions()
 	love.graphics.push()
-	love.graphics.translate(ssx/2, ssy/2)
+	love.graphics.translate(self.ssx/2, self.ssy/2)
 	love.graphics.scale(self.scale)
 	love.graphics.rotate(self.rotation)
 	love.graphics.translate(-self.x, -self.y)
@@ -40,9 +41,8 @@ function camera:draw(f)
 end
 
 function camera:screen2world(x, y)
-	local ssx, ssy = love.graphics.getDimensions()
-	x = x - ssx/2
-	y = y - ssy/2
+	x = x - self.ssx/2
+	y = y - self.ssy/2
 	x = x / self.scale
 	y = y / self.scale
 	x, y = rotate(x, y, self.rotation)
@@ -53,11 +53,10 @@ end
 
 function camera:getAABB()
 	-- probably optimizable
-	local ssx, ssy = love.graphics.getDimensions()
 	local pts = {
-		{x=ssx, y=0},
-		{x=ssx, y=ssy},
-		{x=0, y=ssy},
+		{x=self.ssx, y=0},
+		{x=self.ssx, y=self.ssy},
+		{x=0, y=self.ssy},
 		{x=0, y=0}
 	}
 	local minx, maxx, miny, maxy
