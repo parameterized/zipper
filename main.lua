@@ -16,16 +16,18 @@ require 'hud'
 
 gameState = 'menu'
 time = 0
+gameTime = 0
 
 function love.load()
 
 end
 
 function love.update(dt)
+    time = time + dt
     if gameState == 'menu' then
 
     elseif gameState == 'playing' then
-        time = time + dt
+        gameTime = gameTime + dt
         physics.world:update(dt)
         physics.postUpdate()
         world.update(dt)
@@ -60,33 +62,39 @@ function love.textinput(t)
     if debugger.console.active then
         debugger.console.textinput(t)
     else
+        if gameState == 'menu' then
+            menu.textinput(t)
+        elseif gameState == 'playing' then
 
+        end
     end
 end
 
 function love.keypressed(k, scancode, isrepeat)
-    if k == '`' and not debugger.console.active then
+    if k == '`' and not debugger.console.active and not isrepeat then
         debugger.console.active = true
     end
     if debugger.console.active then
         debugger.console.keypressed(k, scancode, isrepeat)
     else
         if gameState == 'menu' then
-            menu.keypressed(k)
+            menu.keypressed(k, scancode, isrepeat)
         elseif gameState == 'playing' then
-            if k == 'escape' then
+            if k == 'escape' and not isrepeat then
                 gameState = 'menu'
                 love.mouse.setCursor()
                 love.mouse.setGrabbed(false)
             end
         end
-        if k == 'f1' then
-            debugger.show = not debugger.show
-        elseif k == 'f2' then
-            player.freeFire = not player.freeFire
-        elseif k == 'f3' then
-            for _, v in pairs(entities.dynamic.container['hex'] or {}) do
-                v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
+        if not isrepeat then
+            if k == 'f1' then
+                debugger.show = not debugger.show
+            elseif k == 'f2' then
+                player.freeFire = not player.freeFire
+            elseif k == 'f3' then
+                for _, v in pairs(entities.dynamic.container['hex'] or {}) do
+                    v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
+                end
             end
         end
     end

@@ -6,6 +6,7 @@ graphicsScale = 1
 love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
 
+love.keyboard.setKeyRepeat(true)
 love.graphics.setDefaultFilter('nearest', 'nearest')
 
 fonts = {
@@ -16,7 +17,7 @@ fonts = {
 }
 
 -- palette
--- https://coolors.co/7a7265-c0b7b1-8e6e53-c69c72-433e3f\
+-- https://coolors.co/7a7265-c0b7b1-8e6e53-c69c72-433e3f
 colors = {
     p1 = Color('7A7265'),
     p2 = Color('C0B7B1'),

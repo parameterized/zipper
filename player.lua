@@ -1,6 +1,7 @@
 
 player = {}
 
+player.name = 'Player'
 player.score = 0
 player.fireRate = 5
 player.lastFireTime = 0
@@ -45,11 +46,11 @@ function player.update(dt)
 
     player.body:applyTorque(-player.body:getAngle()*1e5)
 
-    if love.mouse.isDown(1) and (time - player.lastFireTime > 1/player.fireRate or player.freeFire) then
+    if love.mouse.isDown(1) and (gameTime - player.lastFireTime > 1/player.fireRate or player.freeFire) then
         local a = math.atan2(wmx - player.body:getX(), wmy - player.body:getY()) - math.pi/2
         local hx, hy = player.getHandPos()
         bullets.spawn(true, hx, hy, a, 1200)
-        player.lastFireTime = time
+        player.lastFireTime = gameTime
     end
 
     camera.x = player.body:getX() + math.floor((mx-ssx/2)/6)
@@ -65,4 +66,9 @@ function player.draw()
     love.graphics.polygon('fill', player.body:getWorldPoints(player.shape:getPoints()))
     local hx, hy = player.getHandPos()
     love.graphics.circle('fill', hx, hy, 10)
+    love.graphics.setColor(colors.p5:clone():lighten(0.5):rgb())
+    local font = fonts.f32
+    love.graphics.setFont(font)
+    love.graphics.print(player.name, player.body:getX() - font:getWidth(player.name)/2,
+        player.body:getY() + 50)
 end

@@ -6,7 +6,7 @@ bullets = {
 function bullets.spawn(fromPlayer, x, y, a, s)
     local obj = {
         fromPlayer=fromPlayer,
-        spawnTime=time, life=3,
+        spawnTime=gameTime, life=3,
         body = love.physics.newBody(physics.world, x, y, 'dynamic'),
         shape = love.physics.newCircleShape(8)
     }
@@ -30,7 +30,7 @@ end
 
 function bullets.update(dt)
     for i, v in pairs(bullets.container) do
-        if time - v.spawnTime > v.life then
+        if gameTime - v.spawnTime > v.life then
             bullets.destroy(i)
         end
     end
