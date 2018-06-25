@@ -5,8 +5,8 @@ bullets = {
 
 function bullets.spawn(fromPlayer, x, y, a, s)
     local obj = {
-        fromPlayer=fromPlayer,
-        spawnTime=gameTime, life=3,
+        fromPlayer = fromPlayer,
+        spawnTime = gameTime, life = 3,
         body = love.physics.newBody(physics.world, x, y, 'dynamic'),
         shape = love.physics.newCircleShape(8)
     }

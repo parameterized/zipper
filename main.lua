@@ -5,6 +5,9 @@ require 'loadassets'
 Camera = require 'camera'
 camera = Camera{ssx=ssx, ssy=ssy}
 debugCam = Camera{ssx=ssx, ssy=ssy}
+nut = require 'love_nut'
+require 'server'
+require 'client'
 require 'debugger'
 require 'menu'
 require 'physics'
@@ -13,17 +16,18 @@ require 'player'
 require 'bullets'
 require 'entities'
 require 'hud'
-
-gameState = 'menu'
-time = 0
-gameTime = 0
+require 'chat'
 
 function love.load()
-
+    gameState = 'menu'
+    time = 0
+    gameTime = 0
 end
 
 function love.update(dt)
     time = time + dt
+    server.update(dt)
+    client.update(dt)
     if gameState == 'menu' then
 
     elseif gameState == 'playing' then
@@ -61,6 +65,8 @@ end
 function love.textinput(t)
     if debugger.console.active then
         debugger.console.textinput(t)
+    elseif chat.active then
+        chat.textinput(t)
     else
         if gameState == 'menu' then
             menu.textinput(t)
@@ -71,12 +77,24 @@ function love.textinput(t)
 end
 
 function love.keypressed(k, scancode, isrepeat)
-    if k == '`' and not debugger.console.active and not isrepeat then
-        debugger.console.active = true
-    end
-    if debugger.console.active then
+    -- don't open chat when console submit or menu when escape
+    local consoleActive = debugger.console.active
+    local chatActive = chat.active
+    if consoleActive then
         debugger.console.keypressed(k, scancode, isrepeat)
     else
+        if not chatActive and k == '`' and not isrepeat then
+            debugger.console.active = true
+        end
+    end
+    if chatActive then
+        chat.keypressed(k, scancode, isrepeat)
+    else
+        if not consoleActive and k == 'return' and not isrepeat then
+            chat.active = true
+        end
+    end
+    if not consoleActive and not chatActive then
         if gameState == 'menu' then
             menu.keypressed(k, scancode, isrepeat)
         elseif gameState == 'playing' then
@@ -119,6 +137,7 @@ function love.draw()
         player.draw()
         activeCam:reset()
         hud.draw()
+        chat.draw()
     end
     debugger.draw()
     local mx, my = love.mouse.getPosition()
@@ -126,4 +145,9 @@ function love.draw()
     my = my/graphicsScale
     local wmx, wmy = camera:screen2world(mx, my)
     love.graphics.pop()
+end
+
+function love.quit()
+    server.close()
+    client.close()
 end

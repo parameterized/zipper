@@ -1,7 +1,7 @@
 
 function safeIndex(t, ...)
 	for _, k in pairs({...}) do
-		if not (type(t) == 'table') then return nil end
+		if type(t) ~= 'table' then return nil end
 		t = t[k]
 	end
 	return t

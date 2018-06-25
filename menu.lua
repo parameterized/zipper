@@ -3,6 +3,7 @@ menu = {
     state = 'main',
     btns = {},
     inputs = {},
+    infos = {},
     activeInput = nil
 }
 
@@ -13,9 +14,7 @@ function menu.addBtn(t)
     t.type = t.type or 'default'
     t.action = t.action or function() end
     t.x = t.x or ssx/2
-    t.x = math.floor(t.x)
     t.y = t.y or ssy/2
-    t.y = math.floor(t.y)
     if t.type == 'cycle' then
         t.bw, t.bh = 0, 0
         t.items = t.items or {'<item>'}
@@ -27,8 +26,8 @@ function menu.addBtn(t)
         t.bw = math.floor(t.font:getWidth(t.text)) + 40
         t.bh = math.floor(t.font:getHeight()) + 20
     end
-    t.bx = t.x - t.bw/2
-    t.by = t.y - t.bh/2
+    t.bx = math.floor(t.x - t.bw/2)
+    t.by = math.floor(t.y - t.bh/2)
     if not menu.btns[t.state] then menu.btns[t.state] = {} end
     table.insert(menu.btns[t.state], t)
     return t
@@ -41,9 +40,7 @@ function menu.addInput(t)
     t.value = t.value or ''
     t.action = t.action or function() end
     t.x = t.x or ssx/2
-    t.x = math.floor(t.x)
     t.y = t.y or ssy/2
-    t.y = math.floor(t.y)
     t.w = t.w or 320
     t.bw = t.w
     t.bh = t.font:getHeight() + 4
@@ -53,6 +50,18 @@ function menu.addInput(t)
     table.insert(menu.inputs[t.state], t)
     return t
 end
+
+function menu.addInfo(t)
+    t.state = t.state or 'main'
+    t.text = t.text or 'Info'
+    t.font = t.font or fonts.f32
+    t.x = t.x or ssx/2
+    t.y = t.y or ssy/2
+    if not menu.infos[t.state] then menu.infos[t.state] = {} end
+    table.insert(menu.infos[t.state], t)
+    return t
+end
+
 local menuDefaults
 function menu.readDefaults()
     menuDefaults = dofile(love.filesystem.getRealDirectory('menuDefaults.lua') .. '/menuDefaults.lua')
@@ -69,7 +78,8 @@ function menu.writeDefaults()
     love.filesystem.write('menuDefaults.lua', str)
 end
 
-menu.addBtn{text='Zipper', font=fonts.f48, y=120, type='static'}
+--menu.addBtn{text='Zipper', font=fonts.f48, y=120, type='static'}
+menu.addInfo{text='Zipper', font=fonts.f48, y=120}
 menu.addBtn{text='Play', y=360, action=function()
     menu.state = 'play'
 end}
@@ -93,13 +103,20 @@ menu.portInput = menu.addInput{state='play', text='Port', value=menuDefaults.por
 menu.addBtn{state='play', text='Host', x=ssx/2 + 180 - 60, y=460, action=function()
     menu.writeDefaults()
     print('host on port ' .. menu.portInput.value)
+    menu.state = 'connect'
 end}
 menu.addBtn{state='play', text='Join', x=ssx/2 + 180 + 60, y=460, action=function()
     menu.writeDefaults()
     print(string.format('connect to %s:%s', menu.ipInput.value, menu.portInput.value))
+    menu.state = 'connect'
 end}
 menu.addBtn{state='play', text='Back', y=580, action=function()
     menu.state = 'main'
+end}
+
+menu.connectInfo = menu.addInfo{state='connect', text='[connection info]', y=300}
+menu.addBtn{state='connect', text='Cancel', y=580, action=function()
+    menu.state = 'play'
 end}
 
 menu.addBtn{state='options', text='Resolution', y=200,
@@ -203,6 +220,11 @@ function menu.keypressed(k, scancode, isrepeat)
             menu.state = 'main'
             menu.activeInput = nil
         end
+    elseif menu.state == 'connect' then
+        if k == 'escape' then
+            menu.state = 'play'
+            menu.activeInput = nil
+        end
     elseif menu.state == 'options' then
         if k == 'escape' then
             menu.state = 'main'
@@ -232,18 +254,16 @@ function menu.draw()
         if v.draw then
             v.draw(v, mx, my)
         else
-            if not (v.type == 'static') then
-                if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
-                    love.graphics.setColor(colors.p5_1:rgb())
+            if mx > v.bx and mx < v.bx + v.bw and my > v.by and my < v.by + v.bh then
+                love.graphics.setColor(colors.p5_1:rgb())
+            else
+                if v.type == 'toggle' and v.active then
+                    love.graphics.setColor(colors.p5_1:clone():lighten(0.8):rgb())
                 else
-                    if v.type == 'toggle' and v.active then
-                        love.graphics.setColor(colors.p5_1:clone():lighten(0.8):rgb())
-                    else
-                        love.graphics.setColor(colors.p5_2:rgb())
-                    end
+                    love.graphics.setColor(colors.p5_2:rgb())
                 end
-                love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
             end
+            love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
             local text = v.text
             if v.type == 'cycle' then
                 love.graphics.rectangle('fill', v.bx, v.by, v.bw, v.bh)
@@ -276,6 +296,15 @@ function menu.draw()
             love.graphics.setColor(colors.p1_1:rgb())
             love.graphics.setFont(v.font)
             love.graphics.print(text, math.floor(v.x - v.font:getWidth(text)/2), math.floor(v.y - v.font:getHeight()/2))
+        end
+    end
+    for _, v in pairs(menu.infos[menu.state] or {}) do
+        if v.draw then
+            v.draw(v, mx, my)
+        else
+            love.graphics.setColor(colors.p1_1:rgb())
+            love.graphics.setFont(v.font)
+            love.graphics.print(v.text, math.floor(v.x - v.font:getWidth(v.text)/2), math.floor(v.y - v.font:getHeight()/2))
         end
     end
 end

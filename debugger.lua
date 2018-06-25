@@ -7,15 +7,15 @@ debugger = {
 }
 
 function debugger.log(msg)
-    table.insert(debugger.logs, msg)
+    table.insert(debugger.logs, tostring(msg))
 end
 
 function debugger.logVal(k, v)
-    debugger.logVals[k] = {v=v, time=time}
+    debugger.logVals[k] = {v=tostring(v), time=time}
 end
 
 function debugger.console.textinput(t)
-    if not (t == '`') then
+    if t ~= '`' then
         debugger.console.val = debugger.console.val .. t
     end
 end
@@ -24,23 +24,23 @@ function debugger.console.keypressed(k, scancode, isrepeat)
     if k == 'return' then
 		debugger.console.submit()
 	elseif k == 'backspace' then
-		local lcv = debugger.console.val
+		local dcv = debugger.console.val
 		debugger.console.val = lcv:sub(0, math.max(lcv:len()-1, 0))
 	elseif k == 'up' then
 		debugger.console.val = debugger.console.lastVal
 	elseif k == 'down' then
 		debugger.console.val = ''
-	elseif k == 'escape' then
+	elseif k == 'escape' or k == '`' and not isrepeat then
 		debugger.console.val = ''
 		debugger.console.active = false
 	end
 end
 
 function debugger.console.submit()
-	debugger.console.active = false
 	debugger.console.lastVal = debugger.console.val
     -- handle debugger.console.val here
 	debugger.console.val = ''
+    debugger.console.active = false
 end
 
 function debugger.setVals()
