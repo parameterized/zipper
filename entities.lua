@@ -20,7 +20,6 @@ entities.defs.hex = require 'entityDefs.hex'
 entities.defs.obstacle = require 'entityDefs.obstacle'
 
 entities.chunkSize = 512
--- max entity collider radius should be chunkSize/3 (170.66)
 entities.staticInfluenceRadius = 0 --170
 entities.dynamicInfluenceRadius = 0 --40
 for _, v in pairs(entities.defs) do
@@ -30,9 +29,10 @@ for _, v in pairs(entities.defs) do
         entities.dynamicInfluenceRadius = math.max(entities.dynamicInfluenceRadius, v.influenceRadius)
     end
 end
-entities.staticCullRadius = entities.dynamicInfluenceRadius*4 + entities.staticInfluenceRadius
-entities.dynamicFreezeRadius = entities.dynamicInfluenceRadius
-entities.dynamicCullRadius = entities.dynamicInfluenceRadius*3
+entities.staticCullRadius = entities.dynamicInfluenceRadius*5 + entities.staticInfluenceRadius
+entities.dynamicFreezeRadius = entities.dynamicInfluenceRadius*2
+entities.dynamicCullRadius = entities.dynamicInfluenceRadius*4
+entities.activeRadius = math.max(entities.staticCullRadius, entities.dynamicCullRadius)
 
 function entities.loadChunk(i, j)
     for k=1, 3 do
@@ -51,11 +51,11 @@ end
 function entities.update(dt)
     local camBX, camBY, camBW, camBH = camera:getAABB()
 
-    local activeRadius = entities.staticCullRadius
-    local chunkBX = camBX - activeRadius
-    local chunkBY = camBY - activeRadius
-    local chunkBW = camBW + activeRadius*2
-    local chunkBH = camBH + activeRadius*2
+    local ar = entities.activeRadius
+    local chunkBX = camBX - ar
+    local chunkBY = camBY - ar
+    local chunkBW = camBW + ar*2
+    local chunkBH = camBH + ar*2
     local activeChunks = {}
     for i=math.floor(chunkBX/entities.chunkSize), math.floor((chunkBX + chunkBW)/entities.chunkSize) do
         for j=math.floor(chunkBY/entities.chunkSize), math.floor((chunkBY + chunkBH)/entities.chunkSize) do

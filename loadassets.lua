@@ -9,6 +9,10 @@ math.randomseed(love.timer.getTime())
 love.keyboard.setKeyRepeat(true)
 love.graphics.setDefaultFilter('nearest', 'nearest')
 
+canvases = {
+    menu = love.graphics.newCanvas(ssx, ssy)
+}
+
 fonts = {
     f14 = love.graphics.newFont(14),
     f18 = love.graphics.newFont(18),

@@ -26,11 +26,13 @@ end
 
 function love.update(dt)
     time = time + dt
-    server.update(dt)
-    client.update(dt)
-    if gameState == 'menu' then
-
-    elseif gameState == 'playing' then
+    if server.running then
+        server.update(dt)
+    end
+    if client.connected then
+        client.update(dt)
+    end
+    if gameState == 'playing' then
         gameTime = gameTime + dt
         physics.world:update(dt)
         physics.postUpdate()
@@ -44,9 +46,8 @@ end
 function love.mousepressed(x, y, btn, isTouch)
     x = x/graphicsScale
     y = y/graphicsScale
-    if gameState == 'menu' then
-        menu.mousepressed(x, y, btn)
-    elseif gameState == 'playing' then
+    menu.mousepressed(x, y, btn)
+    if gameState == 'playing' and not menu.overlayActive then
         love.mouse.setCursor(cursors.crosshairDown)
         player.mousepressed(x, y, btn)
     end
@@ -55,9 +56,7 @@ end
 function love.mousereleased(x, y, btn, isTouch)
     x = x/graphicsScale
     y = y/graphicsScale
-    if gameState == 'menu' then
-
-    elseif gameState == 'playing' then
+    if gameState == 'playing' and not menu.overlayActive then
         love.mouse.setCursor(cursors.crosshairUp)
     end
 end
@@ -68,9 +67,8 @@ function love.textinput(t)
     elseif chat.active then
         chat.textinput(t)
     else
-        if gameState == 'menu' then
-            menu.textinput(t)
-        elseif gameState == 'playing' then
+        menu.textinput(t)
+        if gameState == 'playing' then
 
         end
     end
@@ -95,15 +93,7 @@ function love.keypressed(k, scancode, isrepeat)
         end
     end
     if not consoleActive and not chatActive then
-        if gameState == 'menu' then
-            menu.keypressed(k, scancode, isrepeat)
-        elseif gameState == 'playing' then
-            if k == 'escape' and not isrepeat then
-                gameState = 'menu'
-                love.mouse.setCursor()
-                love.mouse.setGrabbed(false)
-            end
-        end
+        menu.keypressed(k, scancode, isrepeat)
         if not isrepeat then
             if k == 'f1' then
                 debugger.show = not debugger.show
@@ -121,9 +111,7 @@ end
 function love.draw()
     love.graphics.push()
     love.graphics.scale(graphicsScale)
-    if gameState == 'menu' then
-        menu.draw()
-    elseif gameState == 'playing' then
+    if gameState == 'playing' then
         local activeCam = camera
         if debugger.show then
             activeCam = debugCam
@@ -139,6 +127,7 @@ function love.draw()
         hud.draw()
         chat.draw()
     end
+    menu.draw()
     debugger.draw()
     local mx, my = love.mouse.getPosition()
     mx = mx/graphicsScale
@@ -148,6 +137,10 @@ function love.draw()
 end
 
 function love.quit()
-    server.close()
-    client.close()
+    if server.running then
+        server.close()
+    end
+    if client.connected then
+        client.close()
+    end
 end

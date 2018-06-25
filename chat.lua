@@ -8,12 +8,16 @@ chat = {
 
 function chat.addMsg(v)
     table.insert(chat.log, v)
+    chat.lastMsgTime = gameTime
 end
 
 function chat.submit()
     if chat.val ~= '' then
-        chat.addMsg(chat.val)
-        chat.lastMsgTime = gameTime
+        if client.connected then
+            client.nutClient:sendRPC('chatMsg', chat.val)
+        else
+            chat.addMsg(chat.val)
+        end
     end
     chat.val = ''
     chat.active = false
