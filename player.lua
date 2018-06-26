@@ -64,6 +64,18 @@ function player.mousepressed(mx, my, btn)
 end
 
 function player.draw()
+    -- other players
+    for _, v in pairs(client.currentState.players) do
+        if v.id ~= player.id then
+            love.graphics.setColor(colors.p2:rgb())
+            love.graphics.circle('fill', v.x, v.y, 25)
+            love.graphics.setColor(colors.p5:clone():lighten(0.5):rgb())
+            local font = fonts.f32
+            love.graphics.setFont(font)
+            love.graphics.print(v.name, v.x - font:getWidth(v.name)/2, v.y + 50)
+        end
+    end
+    -- local player
     love.graphics.setColor(colors.p2:rgb())
     love.graphics.polygon('fill', player.body:getWorldPoints(player.shape:getPoints()))
     local hx, hy = player.getHandPos()

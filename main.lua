@@ -6,6 +6,7 @@ Camera = require 'camera'
 camera = Camera{ssx=ssx, ssy=ssy}
 debugCam = Camera{ssx=ssx, ssy=ssy}
 nut = require 'love_nut'
+json = require 'json'
 require 'server'
 require 'client'
 require 'debugger'
@@ -144,4 +145,5 @@ function love.quit()
     if client.connected then
         client.close()
     end
+    menu.writeDefaults()
 end

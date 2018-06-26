@@ -5,6 +5,8 @@ function server.start(port, singleplayer)
     port = tonumber(port)
     server.singleplayer = singleplayer
     server.players = {}
+    server.added = {players={}}
+    server.removed = {players={}}
     server.playerNames = {}
     server.nutServer = nut.server{port=port}
     server.nutServer:addRPCs{
@@ -13,8 +15,7 @@ function server.start(port, singleplayer)
             if not server.singleplayer then
                 self:sendRPC('chatMsg', string.format('Server: %s disconnected', pname))
             end
-            server.playerNames[pname] = false
-            server.players[clientId] = nil
+            server.removePlayer(clientId)
 
             self.clients[clientId] = nil
             nut.log(clientId .. ' disconnected')
@@ -27,6 +28,12 @@ function server.start(port, singleplayer)
             or reservedNames[buildName(data, postfix)] do
                 postfix = postfix + 1
             end
+            local add = {players={}}
+            -- don't send clientIds
+            for _, v in pairs(server.players) do
+                table.insert(add.players, v)
+            end
+            self:sendRPC('add', json.encode(add), clientId)
             server.addPlayer(buildName(data, postfix), clientId)
         end,
         chatMsg = function(self, data, clientId)
@@ -34,6 +41,18 @@ function server.start(port, singleplayer)
             self:sendRPC('chatMsg', string.format('%s: %s', pname, data))
         end
     }
+    server.nutServer:addUpdate(function(self)
+        local addStr = json.encode(server.added)
+        if addStr ~= '{"players":[]}' then
+            self:sendRPC('add', addStr)
+        end
+        server.added = {players={}}
+        local removeStr = json.encode(server.removed)
+        if removeStr ~= '{"players":[]}' then
+            self:sendRPC('remove', removeStr)
+        end
+        server.removed = {players={}}
+    end)
     server.nutServer:start()
     server.running = true
     if not server.singleplayer then
@@ -42,14 +61,22 @@ function server.start(port, singleplayer)
 end
 
 function server.addPlayer(name, clientId)
-    local p = {name=name}
+    local p = {id=uuid(), name=name, x=(math.random()*2-1)*256, y=(math.random()*2-1)*256}
     server.players[clientId] = p
     server.playerNames[name] = true
-    -- todo: return serialized spawn info (name, position)
-    server.nutServer:sendRPC('returnPlayerName', p.name, clientId)
+    table.insert(server.added.players, p)
+    server.nutServer:sendRPC('returnPlayer',
+        json.encode({id=p.id, name=p.name, x=p.x, y=p.y}), clientId)
     if not server.singleplayer then
         server.nutServer:sendRPC('chatMsg', p.name .. ' connected')
     end
+end
+
+function server.removePlayer(clientId)
+    local p = server.players[clientId]
+    table.insert(server.removed.players, p)
+    server.playerNames[p.name] = nil
+    server.players[clientId] = nil
 end
 
 function server.update(dt)

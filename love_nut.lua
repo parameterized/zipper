@@ -27,6 +27,7 @@ end
 local client = {}
 
 client.rpcs = {}
+client.updates = {}
 
 function client:new(o)
     o = o or {}
@@ -69,6 +70,10 @@ function client:addRPCs(t)
     end
 end
 
+function client:addUpdate(f)
+    table.insert(self.updates, f)
+end
+
 function client:update(dt)
     self.updateTimer = self.updateTimer + dt
     if self.updateTimer > self.updateRate then
@@ -93,6 +98,9 @@ function client:update(dt)
                     nut.logError('client tcp recv err: ' .. tostring(msg))
                 end
             until not data
+            for _, v in pairs(self.updates) do
+                v(self)
+            end
         end
     end
 end
@@ -135,6 +143,7 @@ server.rpcs = {
         nut.log(clientId .. ' disconnected')
     end
 }
+server.updates = {}
 
 function server:new(o)
     o = o or {}
@@ -167,6 +176,10 @@ function server:addRPCs(t)
     for name, rpc in pairs(t) do
         self.rpcs[name] = rpc
     end
+end
+
+function server:addUpdate(f)
+    table.insert(self.updates, f)
 end
 
 function server:accept()
@@ -221,6 +234,9 @@ function server:update(dt)
                     nut.logError('server tcp recv err: ' .. tostring(msg_or_ip))
                 end
             until not data
+        end
+        for _, v in pairs(self.updates) do
+            v(self)
         end
     end
 end
