@@ -24,6 +24,12 @@ function client.connect(ip, port)
             data = json.decode(data)
             for _, v in pairs(data.players) do
                 if v.id ~= player.id then
+                    v.body = love.physics.newBody(physics.world, v.x, v.y, 'dynamic')
+                    v.shape = love.physics.newRectangleShape(50, 50)
+                    v.fixture = love.physics.newFixture(v.body, v.shape, 1)
+                    v.fixture:setUserData{type='otherPlayer'}
+                    v.fixture:setCategory(3)
+                    v.fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
                     client.currentState.players[v.id] = v
                 end
             end
@@ -35,8 +41,25 @@ function client.connect(ip, port)
                     client.currentState.players[v.id] = nil
                 end
             end
+        end,
+        stateUpdate = function(self, data)
+            data = json.decode(data)
+            for _, v in pairs(data.players) do
+                if v.id ~= player.id and client.currentState.players[v.id] then
+                    local p = client.currentState.players[v.id]
+                    p.x = v.x
+                    p.y = v.y
+                    p.angle = v.angle
+                    p.cursor = v.cursor
+                    p.body:setPosition(p.x, p.y)
+                    p.body:setAngle(p.angle)
+                end
+            end
         end
     }
+    client.nutClient:addUpdate(function(self)
+        self:sendRPC('setPlayer', json.encode(player.serialize()))
+    end)
     client.nutClient:connect(ip, port)
     client.connected = true
     client.nutClient:sendRPC('requestPlayer', menu.nameInput.value)

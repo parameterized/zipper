@@ -84,7 +84,7 @@ function client:update(dt)
                 if data then
                     nut.log('client received udp: ' .. data)
                     -- todo: handle
-                elseif not (msg == 'timeout') then
+                elseif msg ~= 'timeout' then
                     nut.logError('client udp recv err: ' .. tostring(msg))
                 end
             until not data
@@ -94,7 +94,7 @@ function client:update(dt)
                     nut.log('client received tcp: ' .. data)
                     local rpcName, rpcData = data:match('^(%S*) (.*)$')
                     self:callRPC(rpcName, rpcData)
-                elseif not (msg == 'timeout') then
+                elseif msg ~= 'timeout' then
                     nut.logError('client tcp recv err: ' .. tostring(msg))
                 end
             until not data
@@ -125,8 +125,10 @@ end
 
 function client:close()
     self:sendRPC('disconnect')
+    socket.sleep(0.1) -- todo: not good solution
     self.udp:close()
     self.tcp:close()
+    client.connected = false
 end
 
 setmetatable(client, {__call = function(_, ...) return client:new(...) end})
@@ -149,7 +151,7 @@ function server:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
-    local defaults = {port=1357, updateRate=1/20}
+    local defaults = {port=1357, updateRate=1/20, connectionLimit=nil}
     for k, v in pairs(defaults) do
         if not o[k] then o[k] = v end
     end
@@ -200,7 +202,7 @@ function server:accept()
         if rpc then
             rpc(self, '$', clientId)
         end
-    elseif not (msg == 'timeout') then
+    elseif msg ~= 'timeout' then
         nut.logError('server tcp accept err: ' .. tostring(msg))
     end
     return sock, msg
@@ -211,7 +213,16 @@ function server:update(dt)
     if self.updateTimer > self.updateRate then
         self.updateTimer = self.updateTimer - self.updateRate
         repeat
-            sock = self:accept()
+            local sock
+            if self.connectionLimit then
+                local ctr = 0
+                for _, _ in pairs(self.clients) do ctr = ctr + 1 end
+                if ctr < self.connectionLimit then
+                    sock = self:accept()
+                end
+            else
+                sock = self:accept()
+            end
         until not sock
         repeat
             local data, msg_or_ip, port_or_nil = self.udp:receivefrom()
@@ -219,7 +230,7 @@ function server:update(dt)
                 local ip, port = msg_or_ip, port_or_nil
                 nut.log('server received udp: ' .. data)
                 local clientid = ip .. ':' .. tostring(port)
-            elseif not (msg_or_ip == 'timeout') then
+            elseif msg_or_ip ~= 'timeout' then
                 nut.logError('server udp recv err: ' .. tostring(msg_or_ip))
             end
         until not data
@@ -230,7 +241,7 @@ function server:update(dt)
                     nut.log('server received tcp: ' .. data)
                     local rpcName, rpcData = data:match('^(%S*) (.*)$')
                     self:callRPC(rpcName, rpcData, clientId)
-                elseif not (msg == 'timeout') then
+                elseif msg ~= 'timeout' then
                     nut.logError('server tcp recv err: ' .. tostring(msg_or_ip))
                 end
             until not data

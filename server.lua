@@ -8,7 +8,8 @@ function server.start(port, singleplayer)
     server.added = {players={}}
     server.removed = {players={}}
     server.playerNames = {}
-    server.nutServer = nut.server{port=port}
+    local connectionLimit = server.singleplayer and 1 or nil
+    server.nutServer = nut.server{port=port, connectionLimit=connectionLimit}
     server.nutServer:addRPCs{
         disconnect = function(self, data, clientId)
             local pname = server.players[clientId].name
@@ -39,6 +40,12 @@ function server.start(port, singleplayer)
         chatMsg = function(self, data, clientId)
             local pname = server.players[clientId].name
             self:sendRPC('chatMsg', string.format('%s: %s', pname, data))
+        end,
+        setPlayer = function(self, data, clientId)
+            -- todo: more validation (value types)
+            if pcall(function() data = json.decode(data) end) then
+                server.players[clientId] = data
+            end
         end
     }
     server.nutServer:addUpdate(function(self)
@@ -52,6 +59,11 @@ function server.start(port, singleplayer)
             self:sendRPC('remove', removeStr)
         end
         server.removed = {players={}}
+        local stateUpdate = {players={}, time=gameTime}
+        for _, v in pairs(server.players) do
+            table.insert(stateUpdate.players, v)
+        end
+        self:sendRPC('stateUpdate', json.encode(stateUpdate))
     end)
     server.nutServer:start()
     server.running = true
@@ -61,12 +73,15 @@ function server.start(port, singleplayer)
 end
 
 function server.addPlayer(name, clientId)
-    local p = {id=uuid(), name=name, x=(math.random()*2-1)*256, y=(math.random()*2-1)*256}
+    local p = {
+        id = uuid(), name = name,
+        x = (math.random()*2-1)*256, y = (math.random()*2-1)*256, angle = 0,
+        cursor = {x=0, y=0}
+    }
     server.players[clientId] = p
     server.playerNames[name] = true
     table.insert(server.added.players, p)
-    server.nutServer:sendRPC('returnPlayer',
-        json.encode({id=p.id, name=p.name, x=p.x, y=p.y}), clientId)
+    server.nutServer:sendRPC('returnPlayer', json.encode(p), clientId)
     if not server.singleplayer then
         server.nutServer:sendRPC('chatMsg', p.name .. ' connected')
     end
