@@ -8,6 +8,7 @@ function server.start(port, singleplayer)
     server.added = {players={}}
     server.removed = {players={}}
     server.playerNames = {}
+    server.uuid2clientId = {}
     local connectionLimit = server.singleplayer and 1 or nil
     server.nutServer = nut.server{port=port, connectionLimit=connectionLimit}
     server.nutServer:addRPCs{
@@ -30,7 +31,6 @@ function server.start(port, singleplayer)
                 postfix = postfix + 1
             end
             local add = {players={}}
-            -- don't send clientIds
             for _, v in pairs(server.players) do
                 table.insert(add.players, v)
             end
@@ -45,6 +45,8 @@ function server.start(port, singleplayer)
             -- todo: more validation (value types)
             if pcall(function() data = json.decode(data) end) then
                 server.players[clientId] = data
+            else
+                debugger.log('error decoding server rpc setPlayer')
             end
         end
     }
@@ -61,7 +63,8 @@ function server.start(port, singleplayer)
         server.removed = {players={}}
         local stateUpdate = {players={}, time=gameTime}
         for _, v in pairs(server.players) do
-            table.insert(stateUpdate.players, v)
+            -- don't send clientIds - index by uuid
+            stateUpdate.players[v.id] = v
         end
         self:sendRPC('stateUpdate', json.encode(stateUpdate))
     end)
@@ -80,6 +83,7 @@ function server.addPlayer(name, clientId)
     }
     server.players[clientId] = p
     server.playerNames[name] = true
+    server.uuid2clientId[p.id] = clientId
     table.insert(server.added.players, p)
     server.nutServer:sendRPC('returnPlayer', json.encode(p), clientId)
     if not server.singleplayer then
@@ -90,6 +94,7 @@ end
 function server.removePlayer(clientId)
     local p = server.players[clientId]
     table.insert(server.removed.players, p)
+    server.uuid2clientId[p.id] = nil
     server.playerNames[p.name] = nil
     server.players[clientId] = nil
 end

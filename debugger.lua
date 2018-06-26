@@ -45,7 +45,7 @@ end
 
 function debugger.setVals()
     debugger.logVal('FPS', love.timer.getFPS())
-    debugger.log(time)
+    --debugger.log(time)
 
     local ctr = 0
     for _, typev in pairs(entities.static.container) do
