@@ -89,38 +89,36 @@ menu.addBtn{text='Exit', y=580, action=function()
     love.event.quit()
 end}
 
-local function startGame()
-    player.name = menu.nameInput.value
-    gameState = 'playing'
-    menu.state = 'overlay'
-    love.mouse.setCursor(cursors.crosshairUp)
-    if menu.cursorLockBtn.active then love.mouse.setGrabbed(true) end
-    player.lastFireTime = gameTime
-    chat.log = {}
-end
-
 menu.nameInput = menu.addInput{state='play', text='Player Name', value=menuDefaults.name, x=ssx/2 - 180, y=380}
 menu.addBtn{state='play', text='Singleplayer', x=ssx/2 - 180, y=460, action=function()
     menu.writeDefaults()
-    startGame()
+    chat.log = {}
+    -- todo: choose open port
+    server.start(menu.portInput.value, true)
+    client.connect('127.0.0.1', menu.portInput.value)
+    menu.state = 'connect'
+    menu.connectInfo.text = 'Starting Game'
 end}
 menu.ipInput = menu.addInput{state='play', text='IP', value=menuDefaults.ip, x=ssx/2 + 180, y=300}
 menu.portInput = menu.addInput{state='play', text='Port', value=menuDefaults.port, x=ssx/2 + 180, y=380}
 menu.addBtn{state='play', text='Host', x=ssx/2 + 180 - 60, y=460, action=function()
     menu.writeDefaults()
     --print('host on port ' .. menu.portInput.value)
+    chat.log = {}
+    -- todo: notify if not open or other err
     server.start(menu.portInput.value)
     client.connect(menu.ipInput.value, menu.portInput.value)
-    -- todo: asynchronous start/connect, connection info page
-    --menu.state = 'connect'
-    startGame()
+    -- todo: asynchronous start/connect
+    menu.state = 'connect'
+    menu.connectInfo.text = 'Starting Game'
 end}
 menu.addBtn{state='play', text='Join', x=ssx/2 + 180 + 60, y=460, action=function()
     menu.writeDefaults()
     --print(string.format('connect to %s:%s', menu.ipInput.value, menu.portInput.value))
+    chat.log = {}
     client.connect(menu.ipInput.value, menu.portInput.value)
-    --menu.state = 'connect'
-    startGame()
+    menu.state = 'connect'
+    menu.connectInfo.text = 'Starting Game'
 end}
 menu.addBtn{state='play', text='Back', y=580, action=function()
     menu.state = 'main'
@@ -129,6 +127,12 @@ end}
 menu.connectInfo = menu.addInfo{state='connect', text='[connection info]', y=300}
 menu.addBtn{state='connect', text='Cancel', y=580, action=function()
     menu.state = 'play'
+    if server.running then
+        server.close()
+    end
+    if client.connected then
+        client.close()
+    end
 end}
 
 menu.addBtn{state='options', text='Resolution', y=200,

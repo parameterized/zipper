@@ -117,6 +117,7 @@ end
 
 function client:close()
     self:sendRPC('disconnect')
+    self.udp:close()
     self.tcp:close()
 end
 
@@ -253,6 +254,7 @@ function server:callRPC(name, data, clientId)
 end
 
 function server:close()
+    self.udp:close()
     self.tcp:close()
 end
 

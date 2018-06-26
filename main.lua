@@ -88,7 +88,8 @@ function love.keypressed(k, scancode, isrepeat)
     if chatActive then
         chat.keypressed(k, scancode, isrepeat)
     else
-        if not consoleActive and k == 'return' and not isrepeat then
+        if gameState == 'playing' and not consoleActive
+        and k == 'return' and not isrepeat then
             chat.active = true
         end
     end

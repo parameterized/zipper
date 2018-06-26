@@ -55,6 +55,10 @@ ease = {
 	inOutQuint = function (t) return t<0.5 and 16*math.pow(t,5) or 1+16*math.pow(t-1,5) end
 }
 
+function buildName(name, postfix)
+	return name .. (postfix ~= 0 and '(' .. postfix .. ')' or '')
+end
+
 function uuid()
     local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
     return string.gsub(template, '[xy]', function (c)
