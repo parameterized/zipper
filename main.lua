@@ -97,17 +97,11 @@ function love.keypressed(k, scancode, isrepeat)
             if k == 'f1' then
                 debugger.show = not debugger.show
             elseif k == 'f2' then
-                --player.freeFire = not player.freeFire
-            elseif k == 'f3' then
                 if server.running then
                     for _, v in pairs(entities.server.dynamic.container['hex'] or {}) do
                         v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
                     end
                 end
-            elseif k == 'f4' then
-                client.interpolate = not client.interpolate
-            elseif k == 'p' then
-                parallax = not parallax
             end
         end
     end

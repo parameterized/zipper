@@ -25,7 +25,7 @@ function debugger.console.keypressed(k, scancode, isrepeat)
 		debugger.console.submit()
 	elseif k == 'backspace' then
 		local dcv = debugger.console.val
-		debugger.console.val = lcv:sub(0, math.max(lcv:len()-1, 0))
+		debugger.console.val = dcv:sub(0, math.max(dcv:len()-1, 0))
 	elseif k == 'up' then
 		debugger.console.val = debugger.console.lastVal
 	elseif k == 'down' then
@@ -37,8 +37,16 @@ function debugger.console.keypressed(k, scancode, isrepeat)
 end
 
 function debugger.console.submit()
-	debugger.console.lastVal = debugger.console.val
-    -- handle debugger.console.val here
+    local cmd = debugger.console.val
+    if cmd == 'freefire' then
+        player.freeFire = not player.freeFire
+    elseif cmd == 'interpolate' then
+        client.interpolate = not client.interpolate
+    elseif cmd == 'parallax' then
+        parallax = not parallax
+    end
+
+    debugger.console.lastVal = debugger.console.val
 	debugger.console.val = ''
     debugger.console.active = false
 end
