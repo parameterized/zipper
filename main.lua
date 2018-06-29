@@ -5,6 +5,7 @@ require 'loadassets'
 Camera = require 'camera'
 camera = Camera{ssx=ssx, ssy=ssy}
 debugCam = Camera{ssx=ssx, ssy=ssy}
+activeCam = camera
 nut = require 'love_nut'
 json = require 'json'
 require 'server'
@@ -23,6 +24,7 @@ function love.load()
     gameState = 'menu'
     time = 0
     gameTime = 0
+    parallax = false
 end
 
 function love.update(dt)
@@ -35,12 +37,7 @@ function love.update(dt)
     end
     if gameState == 'playing' then
         gameTime = gameTime + dt
-        physics.world:update(dt)
-        physics.postUpdate()
-        world.update(dt)
         player.update(dt)
-        bullets.update(dt)
-        entities.update(dt)
     end
 end
 
@@ -100,11 +97,17 @@ function love.keypressed(k, scancode, isrepeat)
             if k == 'f1' then
                 debugger.show = not debugger.show
             elseif k == 'f2' then
-                player.freeFire = not player.freeFire
+                --player.freeFire = not player.freeFire
             elseif k == 'f3' then
-                for _, v in pairs(entities.dynamic.container['hex'] or {}) do
-                    v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
+                if server.running then
+                    for _, v in pairs(entities.server.dynamic.container['hex'] or {}) do
+                        v.body:setLinearVelocity((math.random()*2-1)*4e3, (math.random()*2-1)*4e3)
+                    end
                 end
+            elseif k == 'f4' then
+                client.interpolate = not client.interpolate
+            elseif k == 'p' then
+                parallax = not parallax
             end
         end
     end
@@ -114,17 +117,41 @@ function love.draw()
     love.graphics.push()
     love.graphics.scale(graphicsScale)
     if gameState == 'playing' then
-        local activeCam = camera
+        activeCam = camera
         if debugger.show then
             activeCam = debugCam
             debugCam.x, debugCam.y = camera.x, camera.y
             debugCam.scale = 0.5
         end
         activeCam:set()
+
         world.draw()
-        entities.draw()
-        bullets.draw()
+
+        entities.client.draw()
+        bullets.client.draw()
         player.draw()
+
+        if parallax then
+            love.graphics.push()
+            love.graphics.origin()
+            local cam = activeCam:clone()
+            cam:scaleBy(1.05)
+            cam:set()
+            love.graphics.setCanvas(canvases.parallax)
+            love.graphics.clear(0, 0, 0, 0)
+
+            entities.client.draw()
+            bullets.client.draw()
+            player.draw()
+
+            cam:reset()
+            love.graphics.scale(graphicsScale)
+            love.graphics.setCanvas()
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.draw(canvases.parallax)
+            love.graphics.pop()
+        end
+
         activeCam:reset()
         hud.draw()
         chat.draw()

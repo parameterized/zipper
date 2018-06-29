@@ -10,7 +10,9 @@ love.keyboard.setKeyRepeat(true)
 love.graphics.setDefaultFilter('nearest', 'nearest')
 
 canvases = {
-    menu = love.graphics.newCanvas(ssx, ssy)
+    temp = love.graphics.newCanvas(ssx, ssy),
+    menu = love.graphics.newCanvas(ssx, ssy),
+    parallax = love.graphics.newCanvas(ssx, ssy)
 }
 
 fonts = {

@@ -14,12 +14,42 @@ local function new(opts)
 	return cam
 end
 
-function rotate(x, y, a)
+local function rotate(x, y, a)
 	local s = math.sin(a);
 	local c = math.cos(a);
 	local x2 = x*c + y*s
 	local y2 = y*c - x*s
 	return x2, y2
+end
+
+function camera:clone()
+	return Camera{
+		x = self.x, y = self.y,
+		scale = self.scale, rotation = self.rotation,
+		ssx = self.ssx, ssy = self.ssy
+	}
+end
+
+function camera:setPosition(x, y)
+	self.x, self.y = x, y
+end
+
+function camera:getPosition()
+	return self.x, self.y
+end
+
+function camera:move(dx, dy)
+	self.x = self.x + dx
+	self.y = self.y + dy
+end
+
+-- todo: better name
+function camera:scaleBy(x)
+	self.scale = self.scale*x
+end
+
+function camera:rotate(a)
+	self.rotation = self.rotation + a
 end
 
 function camera:set()

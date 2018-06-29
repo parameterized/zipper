@@ -13,11 +13,7 @@ end
 
 function chat.submit()
     if chat.val ~= '' then
-        if client.connected then
-            client.nutClient:sendRPC('chatMsg', chat.val)
-        else
-            chat.addMsg(chat.val)
-        end
+        client.sendMessage(chat.val)
     end
     chat.val = ''
     chat.active = false

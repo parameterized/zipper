@@ -1,21 +1,29 @@
 
 physics = {
-    postUpdateQueue = {}
+    server = {
+        postUpdateQueue = {}
+    },
+    client = {
+        postUpdateQueue = {}
+    }
 }
 
-function physics.postUpdate()
-    for i, v in pairs(physics.postUpdateQueue) do
+love.physics.setMeter(64)
+
+function physics.server.update(dt)
+    physics.server.world:update(dt)
+    for i, v in pairs(physics.server.postUpdateQueue) do
         v()
-        physics.postUpdateQueue[i] = nil
+        physics.server.postUpdateQueue[i] = nil
     end
 end
 
-function physics.postUpdatePush(f)
-    local id = #physics.postUpdateQueue + 1
-    physics.postUpdateQueue[id] = f
+function physics.server.postUpdatePush(f)
+    local id = #physics.server.postUpdateQueue + 1
+    physics.server.postUpdateQueue[id] = f
 end
 
-function physics.beginContact(a, b, coll)
+function physics.server.beginContact(a, b, coll)
     for _, v in pairs({{a, b}, {b, a}}) do
         local va = v[1]
         local vb = v[2]
@@ -23,26 +31,79 @@ function physics.beginContact(a, b, coll)
         local udb = vb:getUserData() or {}
         if uda.type == 'bullet' then
             if udb.enemy then
-                physics.postUpdatePush(function() bullets.destroy(uda.id) end)
-                physics.postUpdatePush(function() udb:damage(1) end)
+                physics.server.postUpdatePush(function() udb:damage(1, uda.playerId) end)
+                physics.server.postUpdatePush(function() bullets.server.destroy(uda.id) end)
             end
             break
         end
     end
 end
 
-function physics.endContact(a, b, coll)
+function physics.server.endContact(a, b, coll)
 
 end
 
-function physics.preSolve(a, b, coll)
+function physics.server.preSolve(a, b, coll)
 
 end
 
-function physics.postSolve(a, b, coll, normalImpulse, tangentImpulse)
+function physics.server.postSolve(a, b, coll, normalImpulse, tangentImpulse)
 
 end
 
-love.physics.setMeter(64)
-physics.world = love.physics.newWorld(0, 0, true)
-physics.world:setCallbacks(physics.beginContact, physics.endContact, physics.preSolve, physics.postSolve)
+function physics.server.load()
+    physics.server.world = love.physics.newWorld(0, 0, true)
+    physics.server.world:setCallbacks(physics.server.beginContact,
+        physics.server.endContact, physics.server.preSolve, physics.server.postSolve)
+end
+
+
+
+function physics.client.update(dt)
+    physics.client.world:update(dt)
+    for i, v in pairs(physics.client.postUpdateQueue) do
+        v()
+        physics.client.postUpdateQueue[i] = nil
+    end
+end
+
+function physics.client.postUpdatePush(f)
+    local id = #physics.client.postUpdateQueue + 1
+    physics.client.postUpdateQueue[id] = f
+end
+
+function physics.client.beginContact(a, b, coll)
+    --[[
+    for _, v in pairs({{a, b}, {b, a}}) do
+        local va = v[1]
+        local vb = v[2]
+        local uda = va:getUserData() or {}
+        local udb = vb:getUserData() or {}
+        if uda.type == 'bullet' then
+            if udb.enemy then
+                physics.client.postUpdatePush(function() bullets.client.destroy(uda.id) end)
+                physics.client.postUpdatePush(function() udb:damage(1) end)
+            end
+            break
+        end
+    end
+    ]]
+end
+
+function physics.client.endContact(a, b, coll)
+
+end
+
+function physics.client.preSolve(a, b, coll)
+
+end
+
+function physics.client.postSolve(a, b, coll, normalImpulse, tangentImpulse)
+
+end
+
+function physics.client.load()
+    physics.client.world = love.physics.newWorld(0, 0, true)
+    physics.client.world:setCallbacks(physics.client.beginContact,
+        physics.client.endContact, physics.client.preSolve, physics.client.postSolve)
+end

@@ -1,23 +1,25 @@
 
 player = {}
 
-player.name = 'Player'
-player.score = 0
-player.fireRate = 5
-player.lastFireTime = 0
-player.freeFire = false
-player.spd = 2e3
+function player.load()
+    player.name = 'Player'
+    player.score = 0
+    player.fireRate = 5
+    player.lastFireTime = 0
+    player.freeFire = false
+    player.spd = 2e3
 
-player.body = love.physics.newBody(physics.world, 0, 0, 'dynamic')
-player.shape = love.physics.newRectangleShape(50, 50)
-player.fixture = love.physics.newFixture(player.body, player.shape, 1)
-player.fixture:setUserData{type='player'}
-player.fixture:setCategory(2)
-player.fixture:setMask(2)
-player.body:setLinearDamping(10)
-player.body:setAngularDamping(10)
+    player.body = love.physics.newBody(physics.client.world, 0, 0, 'dynamic')
+    player.shape = love.physics.newRectangleShape(50, 50)
+    player.fixture = love.physics.newFixture(player.body, player.shape, 1)
+    player.fixture:setUserData{type='player'}
+    player.fixture:setCategory(2)
+    player.fixture:setMask(2)
+    player.body:setLinearDamping(10)
+    player.body:setAngularDamping(10)
 
-player.cursor = {x=0, y=0}
+    player.cursor = {x=0, y=0}
+end
 
 function player.serialize()
     local p = {
@@ -30,8 +32,7 @@ end
 
 function player.getHandPos(px, py, pa, wmx, wmy)
     if not (px and py and pa and wmx and wmy) then
-        px = player.body:getX()
-        py = player.body:getY()
+        px, py = player.body:getPosition()
         pa = player.body:getAngle()
         local mx, my = love.mouse.getPosition()
         mx = mx/graphicsScale
@@ -69,7 +70,7 @@ function player.update(dt)
         local a = math.atan2(wmx - player.body:getX(), wmy - player.body:getY()) - math.pi/2
         local hx, hy = player.getHandPos(player.body:getX(), player.body:getY(),
             player.body:getAngle(), wmx, wmy)
-        bullets.spawn(true, hx, hy, a, 1200)
+        client.spawnBullet(hx, hy, a, 1200, 3)
         player.lastFireTime = gameTime
     end
 
@@ -84,8 +85,9 @@ end
 function player.draw()
     -- other players
     for _, v in pairs(client.currentState.players) do
-        if v.id ~= player.id then
+        if v.id ~= player.id or debugger.show then
             love.graphics.setColor(colors.p2:rgb())
+            if v.id == player.id and debugger.show then love.graphics.setColor(0, 0, 1, 0.4) end
             love.graphics.polygon('fill', v.body:getWorldPoints(v.shape:getPoints()))
             local hx, hy = player.getHandPos(v.x, v.y, v.angle, v.cursor.x, v.cursor.y)
             love.graphics.circle('fill', hx, hy, 10)

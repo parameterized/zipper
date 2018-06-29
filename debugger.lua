@@ -47,36 +47,43 @@ function debugger.setVals()
     debugger.logVal('FPS', love.timer.getFPS())
     --debugger.log(time)
 
-    local ctr = 0
-    for _, typev in pairs(entities.static.container) do
-        for _, _ in pairs(typev) do ctr = ctr + 1 end
-    end
-    debugger.logVal('static entity container count', ctr)
-    ctr = 0
-    for _, chunkv in pairs(entities.static.culledContainer) do
-        for _, typev in pairs(chunkv) do
+    local ctr
+    if server.running then
+        ctr = 0
+        for _, typev in pairs(entities.server.static.container) do
             for _, _ in pairs(typev) do ctr = ctr + 1 end
         end
-    end
-    debugger.logVal('static entity culled container count', ctr)
+        debugger.logVal('server static entity container count', ctr)
+        ctr = 0
+        for _, chunkv in pairs(entities.server.static.culledContainer) do
+            for _, typev in pairs(chunkv) do
+                for _, _ in pairs(typev) do ctr = ctr + 1 end
+            end
+        end
+        debugger.logVal('server static entity culled container count', ctr)
 
-    ctr = 0
-    for _, typev in pairs(entities.dynamic.container) do
-        for _, _ in pairs(typev) do ctr = ctr + 1 end
-    end
-    debugger.logVal('dynamic entity container count', ctr)
-    ctr = 0
-    for _, typev in pairs(entities.dynamic.frozenContainer) do
-        for _, _ in pairs(typev) do ctr = ctr + 1 end
-    end
-    debugger.logVal('dynamic entity frozen container count', ctr)
-    ctr = 0
-    for _, chunkv in pairs(entities.dynamic.culledContainer) do
-        for _, typev in pairs(chunkv) do
+        ctr = 0
+        for _, typev in pairs(entities.server.dynamic.container) do
             for _, _ in pairs(typev) do ctr = ctr + 1 end
         end
+        debugger.logVal('server dynamic entity container count', ctr)
+        ctr = 0
+        for _, chunkv in pairs(entities.server.dynamic.culledContainer) do
+            for _, typev in pairs(chunkv) do
+                for _, _ in pairs(typev) do ctr = ctr + 1 end
+            end
+        end
+        debugger.logVal('server dynamic entity culled container count', ctr)
     end
-    debugger.logVal('dynamic entity culled container count', ctr)
+    if client.connected then
+        ctr = 0
+        for _, v in pairs(client.currentState.entities) do
+            ctr = ctr + 1
+        end
+        debugger.logVal('client entity container count', ctr)
+
+        debugger.logVal('client state count', #client.states)
+    end
 end
 
 function debugger.draw()
@@ -112,4 +119,12 @@ function debugger.draw()
 		love.graphics.print(debugger.console.val, 10, 12)
 		love.graphics.setShader()
 	end
+
+    if not client.interpolate then
+        love.graphics.setColor(0, 0, 0)
+        local font = fonts.f18
+        love.graphics.setFont(font)
+        local text = 'client interpolation disabled'
+        love.graphics.print(text, math.floor(ssx - font:getWidth(text) - 4), 60)
+    end
 end

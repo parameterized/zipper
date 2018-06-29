@@ -132,7 +132,6 @@ menu.addBtn{state='play', text='Host', x=ssx/2 + 180 - 60, y=460, action=functio
     -- todo: notify if not open or other err
     server.start(menu.portInput.value)
     client.connect(menu.ipInput.value, menu.portInput.value)
-    -- todo: asynchronous start/connect
     menu.state = 'connect'
     menu.connectInfo.text = 'Starting Game'
 end}
@@ -234,9 +233,25 @@ menu.addBtn{state='overlay', text='Main Menu', y=580, action=function()
     player.id = nil
 end}
 
-_=(function()
+-- block-local vars
+repeat
     local w, h, flags = love.window.getMode()
+    local vsyncOn = flags.vsync
     flags.vsync = menuDefaults.vsync
+
+    local fullscreen, fstype = love.window.getFullscreen()
+    local newResolution = menu.resolutionBtn.items[menuDefaults.resolution]
+    if not (fullscreen and fstype == 'desktop')
+    and newResolution ~= string.format('%sx%s', w, h) then
+        w, h = newResolution:match('(%d+)x(%d+)')
+        local wd, hd = love.window.getDesktopDimensions()
+        flags.x = wd/2 - w/2
+        flags.y = hd/2 - h/2
+        love.window.setMode(w, h, flags)
+        graphicsScale = w/1280
+    elseif vsyncOn ~= menuDefaults.vsync then
+        love.window.setMode(w, h, flags)
+    end
 
     local currentWindowType = love.window.getFullscreen()
     local newWindowType = menu.fullscreenBtn.items[menuDefaults.fullscreen]
@@ -256,19 +271,7 @@ _=(function()
         w, h = love.graphics.getDimensions()
         graphicsScale = w/1280
     end
-
-    local fullscreen, fstype = love.window.getFullscreen()
-    local newResolution = menu.resolutionBtn.items[menuDefaults.resolution]
-    if not (fullscreen and fstype == 'desktop')
-    and newResolution ~= string.format('%sx%s', w, h) then
-        w, h = newResolution:match('(%d+)x(%d+)')
-        local wd, hd = love.window.getDesktopDimensions()
-        flags.x = wd/2 - w/2
-        flags.y = hd/2 - h/2
-        love.window.setMode(w, h, flags)
-        graphicsScale = w/1280
-    end
-end)()
+until true
 
 function menu.mousepressed(mx, my, btn)
     if gameState == 'menu' or menu.overlayActive then
@@ -351,7 +354,8 @@ function menu.draw()
         local mx, my = love.mouse.getPosition()
         mx = mx/graphicsScale
         my = my/graphicsScale
-        love.graphics.pop()
+        love.graphics.push()
+        love.graphics.origin()
         love.graphics.setCanvas(canvases.menu)
         love.graphics.clear(colors.p5:rgb())
         for _, v in pairs(menu.btns[menu.state] or {}) do
@@ -412,8 +416,7 @@ function menu.draw()
             end
         end
         love.graphics.setCanvas()
-        love.graphics.push()
-        love.graphics.scale(graphicsScale)
+        love.graphics.pop()
         if gameState == 'playing' and menu.overlayActive then
             love.graphics.setColor(1, 1, 1, 0.8)
         else

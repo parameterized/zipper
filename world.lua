@@ -1,10 +1,6 @@
 
 world = {}
 
-function world.update(dt)
-
-end
-
 function world.draw()
     love.graphics.clear(colors.p3:rgb())
     local freq = 64
