@@ -112,7 +112,11 @@ function client.connect(ip, port)
     client.states = {}
     client.stateIdx = 1
     client.stateTime = 0
+    -- cleanup previous connection
     if client.currentState then
+        entities.client.reset()
+        bullets.client.reset()
+        player.destroy()
         for _, v in pairs(client.currentState.players) do
             v.fixture:destroy()
             v.body:destroy()
@@ -121,8 +125,7 @@ function client.connect(ip, port)
     client.currentState = client.newState()
 
     menu.writeDefaults()
-    bullets.reset()
-    entities.reset()
+
     physics.client.load()
     player.load()
 end
@@ -214,7 +217,9 @@ function client.update(dt)
                         if obj.type == 'hex' then
                             obj.x = lerp(v.x, v2.x, t)
                             obj.y = lerp(v.y, v2.y, t)
-                            obj.angle = lerp(v.angle, v2.angle, t)
+                            obj.xv = lerp(v.xv, v2.xv, t)
+                            obj.yv = lerp(v.yv, v2.yv, t)
+                            obj.angle = lerpAngle(v.angle, v2.angle, t)
                             obj.hp = v2.hp
 
                             obj.body:setPosition(obj.x, obj.y)
@@ -255,6 +260,8 @@ function client.update(dt)
                     if obj.type == 'hex' then
                         obj.x = v.x
                         obj.y = v.y
+                        obj.xv = v.xv
+                        obj.yv = v.yv
                         obj.angle = v.angle
                         obj.hp = v.hp
 

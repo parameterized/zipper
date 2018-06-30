@@ -10,6 +10,13 @@ physics = {
 
 love.physics.setMeter(64)
 
+function physics.server.load()
+    if physics.server.world then physics.server.world:destroy() end
+    physics.server.world = love.physics.newWorld(0, 0, true)
+    physics.server.world:setCallbacks(physics.server.beginContact,
+    physics.server.endContact, physics.server.preSolve, physics.server.postSolve)
+end
+
 function physics.server.update(dt)
     physics.server.world:update(dt)
     for i, v in pairs(physics.server.postUpdateQueue) do
@@ -51,13 +58,14 @@ function physics.server.postSolve(a, b, coll, normalImpulse, tangentImpulse)
 
 end
 
-function physics.server.load()
-    physics.server.world = love.physics.newWorld(0, 0, true)
-    physics.server.world:setCallbacks(physics.server.beginContact,
-        physics.server.endContact, physics.server.preSolve, physics.server.postSolve)
+
+
+function physics.client.load()
+    if physics.client.world then physics.client.world:destroy() end
+    physics.client.world = love.physics.newWorld(0, 0, true)
+    physics.client.world:setCallbacks(physics.client.beginContact,
+        physics.client.endContact, physics.client.preSolve, physics.client.postSolve)
 end
-
-
 
 function physics.client.update(dt)
     physics.client.world:update(dt)
@@ -100,10 +108,4 @@ end
 
 function physics.client.postSolve(a, b, coll, normalImpulse, tangentImpulse)
 
-end
-
-function physics.client.load()
-    physics.client.world = love.physics.newWorld(0, 0, true)
-    physics.client.world:setCallbacks(physics.client.beginContact,
-        physics.client.endContact, physics.client.preSolve, physics.client.postSolve)
 end

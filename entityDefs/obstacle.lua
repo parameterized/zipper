@@ -24,17 +24,20 @@ function obstacle.server:new(o)
     return o
 end
 
+function obstacle.server:serialize()
+    return {
+        id = self.id, type = self.type, x = self.x, y = self.y,
+        width = self.width, height = self.height, angle = self.angle
+    }
+end
+
 function obstacle.server:spawn()
     self.body = love.physics.newBody(physics.server.world, self.x, self.y, 'static')
     self.shape = love.physics.newRectangleShape(self.width, self.height)
     self.fixture = love.physics.newFixture(self.body, self.shape, 1)
     self.fixture:setUserData(self)
     self.body:setAngle(self.angle)
-    local state = {
-        id = self.id, type = self.type, x = self.x, y = self.y,
-        width = self.width, height = self.height, angle = self.angle
-    }
-    return base.server.spawn(self, state)
+    return base.server.spawn(self)
 end
 
 function obstacle.server:destroy()

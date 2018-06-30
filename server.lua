@@ -4,6 +4,7 @@ server = {}
 function server.start(port, singleplayer)
     port = tonumber(port)
     server.singleplayer = singleplayer
+    server.paused = false
     local connectionLimit = server.singleplayer and 1 or nil
     server.nutServer = nut.server{port=port, connectionLimit=connectionLimit}
     server.nutServer:addRPCs{
@@ -99,6 +100,11 @@ function server.start(port, singleplayer)
     -- removed[type] = {id1, id2, ...}
     server.added = server.newState()
     server.removed = server.newState()
+    -- cleanup previous game
+    if server.currentState then
+        entities.server.reset()
+        bullets.server.reset()
+    end
     server.currentState = server.newState()
 
     physics.server.load()

@@ -6,10 +6,11 @@ bullets = {
     client = {}
 }
 
-function bullets.reset()
+function bullets.server.reset()
     for i, v in pairs(bullets.server.container) do
         bullets.server.destroy(i)
     end
+    bullets.server.container = {}
 end
 
 function bullets.server.spawn(data)
@@ -55,6 +56,10 @@ function bullets.server.update(dt)
 end
 
 
+
+function bullets.client.reset()
+    
+end
 
 function bullets.client.draw()
     for _, v in pairs(client.currentState.bullets) do

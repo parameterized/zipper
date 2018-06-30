@@ -21,6 +21,14 @@ function player.load()
     player.cursor = {x=0, y=0}
 end
 
+function player.destroy()
+    if player.fixture and player.body and not player.fixture:isDestroyed()
+    and not player.body:isDestroyed() then
+        player.fixture:destroy()
+        player.body:destroy()
+    end
+end
+
 function player.serialize()
     local p = {
         id = player.id, name = player.name,

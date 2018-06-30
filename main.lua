@@ -29,15 +29,17 @@ end
 
 function love.update(dt)
     time = time + dt
-    if server.running then
-        server.update(dt)
-    end
-    if client.connected then
-        client.update(dt)
-    end
-    if gameState == 'playing' then
-        gameTime = gameTime + dt
-        player.update(dt)
+    if not (server.running and server.paused) then
+        if server.running then
+            server.update(dt)
+        end
+        if client.connected then
+            client.update(dt)
+        end
+        if gameState == 'playing' then
+            gameTime = gameTime + dt
+            player.update(dt)
+        end
     end
 end
 
@@ -122,8 +124,6 @@ function love.draw()
         world.draw()
 
         entities.client.draw()
-        bullets.client.draw()
-        player.draw()
 
         if parallax then
             love.graphics.push()
@@ -135,8 +135,6 @@ function love.draw()
             love.graphics.clear(0, 0, 0, 0)
 
             entities.client.draw()
-            bullets.client.draw()
-            player.draw()
 
             cam:reset()
             love.graphics.scale(graphicsScale)
@@ -145,6 +143,9 @@ function love.draw()
             love.graphics.draw(canvases.parallax)
             love.graphics.pop()
         end
+
+        bullets.client.draw()
+        player.draw()
 
         activeCam:reset()
         hud.draw()

@@ -319,9 +319,15 @@ function menu.keypressed(k, scancode, isrepeat)
             if menu.overlayActive then
                 love.mouse.setCursor()
                 love.mouse.setGrabbed(false)
+                if server.running and server.singleplayer then
+                    server.paused = true
+                end
             else
                 love.mouse.setCursor(cursors.crosshairUp)
                 if menu.cursorLockBtn.active then love.mouse.setGrabbed(true) end
+                if server.running and server.singleplayer then
+                    server.paused = false
+                end
             end
         end
     elseif menu.state == 'connect' then

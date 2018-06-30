@@ -22,7 +22,7 @@ function base.server:new(o)
     return o
 end
 
-function base.server:spawn(state)
+function base.server:spawn()
     self.destroyed = false
     local container = self.static and entities.server.static.container
         or entities.server.dynamic.container
@@ -31,17 +31,21 @@ function base.server:spawn(state)
     container[type] = container[type] or {}
     container[type][id] = self
     self:freeze()
-    state = state or {id=self.id, type=self.type, x=self.x, y=self.y}
-    server.currentState.entities[self.id] = state
-    table.insert(server.added.entities, state)
+    server.currentState.entities[self.id] = self:serialize()
+    table.insert(server.added.entities, self:serialize())
     return self
 end
 
+function base.server:serialize()
+    return {
+        id = self.id, type = self.type,
+        x = self.x, y = self.y
+    }
+end
+
 function base.server:update(dt)
-    local sv = server.currentState.entities[self.id]
-    if sv then
-        sv.x, sv.y = self.x, self.y
-    end
+    -- update self.x, self.y etc here if controlled by physics
+    server.currentState.entities[self.id] = self:serialize()
 end
 
 function base.server:destroy()

@@ -43,7 +43,7 @@ entities.dynamicFreezeRadius = entities.dynamicInfluenceRadius*2
 entities.dynamicCullRadius = entities.dynamicInfluenceRadius*4
 entities.activeRadius = math.max(entities.staticCullRadius, entities.dynamicCullRadius)
 
-function entities.reset()
+function entities.server.reset()
     for etype, _ in pairs(entities.server.defs) do
         for _, v in pairs(entities.server.static.container[etype] or {}) do
             v:destroy()
@@ -80,8 +80,8 @@ function entities.server.update(dt)
     local inFreezeRange = {}
     local inCullRange = {}
     for _, v in pairs(server.currentState.players) do
-        -- todo: larger bbx to compensate for movement
-        local cam = Camera{ssx=ssx, ssy=ssy}
+        -- larger bbx to compensate for movement
+        local cam = Camera{ssx = ssx + 300, ssy = ssy + 300}
         cam:setPosition(v.x, v.y)
 
         local camBX, camBY, camBW, camBH = cam:getAABB()
@@ -186,6 +186,12 @@ function entities.server.update(dt)
 end
 
 
+
+function entities.client.reset()
+    for _, v in pairs(client.currentState.entities) do
+        v:destroy()
+    end
+end
 
 function entities.client.draw()
     for _, v in pairs(client.currentState.entities) do

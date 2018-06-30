@@ -17,6 +17,8 @@ function hex.server:new(o)
     o.id = o.id or uuid()
     o.x = o.x or 0
     o.y = o.y or 0
+    o.xv = o.xv or 0
+    o.yv = o.yv or 0
     o.angle = o.angle or hash2(o.x + 1/3, o.y)*2*math.pi
     o.hp = o.hp or 6
     setmetatable(o, self)
@@ -32,22 +34,24 @@ function hex.server:spawn()
     self.body:setLinearDamping(10)
     self.body:setAngularDamping(10)
     self.body:setAngle(self.angle)
-    return base.server.spawn(self, {
-        id = self.id, type = self.type, x = self.x, y = self.y,
+    return base.server.spawn(self)
+end
+
+function hex.server:serialize()
+    return {
+        id = self.id, type = self.type,
+        x = self.x, y = self.y,
+        xv = self.xv, yv = self.yv,
         angle = self.angle, hp = self.hp
-    })
+    }
 end
 
 function hex.server:update(dt)
-    self.x, self.y = self.body:getPosition()
-    self.angle = self.body:getAngle()
     self.body:applyForce((math.random()*2 - 1)*1e4, (math.random()*2 - 1)*1e4)
-    local sv = server.currentState.entities[self.id]
-    if sv then
-        sv.x, sv.y = self.x, self.y
-        sv.angle = self.angle
-        sv.hp = self.hp
-    end
+    self.x, self.y = self.body:getPosition()
+    self.xv, self.yv = self.body:getLinearVelocity()
+    self.angle = self.body:getAngle()
+    base.server.update(self, dt)
 end
 
 function hex.server:damage(d, clientId)
@@ -107,6 +111,7 @@ function hex.client:draw()
     love.graphics.circle('fill', self.body:getX(), self.body:getY(), self.shape:getRadius() + 1)
     love.graphics.push()
     love.graphics.translate(math.floor(self.body:getX()), math.floor(self.body:getY()))
+    love.graphics.push()
     love.graphics.rotate(self.body:getAngle())
     local p = {1, 3, 5, 2, 4, 6}
     for i=1, 6 do
@@ -118,6 +123,12 @@ function hex.client:draw()
         love.graphics.polygon('fill', 0, 0, math.sin(math.pi/6)*40,
         math.cos(math.pi/6)*40, math.sin(-math.pi/6)*40, math.cos(math.pi/6)*40)
         love.graphics.rotate(math.pi/3)
+    end
+    love.graphics.pop()
+    if debugger.show then
+        love.graphics.setColor(1, 0, 0)
+        love.graphics.setLineWidth(5)
+        love.graphics.line(0, 0, self.xv, self.yv)
     end
     love.graphics.pop()
 end
