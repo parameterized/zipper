@@ -59,7 +59,7 @@ end
 
 function entities.server.loadChunk(i, j)
     if not entities.server.loadedChunks[i .. ',' .. j] then
-        for k=1, 3 do
+        for k=1, 2 do
             local x = (i + hash2(i + k/5, j))*entities.chunkSize
             local y = (j + hash2(i, j + k/5))*entities.chunkSize
             entities.server.defs.hex:new{x=x, y=y}:spawn()
@@ -79,10 +79,10 @@ function entities.server.update(dt)
     local inSimRange = {}
     local inFreezeRange = {}
     local inCullRange = {}
-    for _, v in pairs(server.currentState.players) do
+    for _, p in pairs(server.currentState.players) do
         -- larger bbx to compensate for movement
         local cam = Camera{ssx = ssx + 300, ssy = ssy + 300}
-        cam:setPosition(v.x, v.y)
+        cam:setPosition(p.x, p.y)
 
         local camBX, camBY, camBW, camBH = cam:getAABB()
 
@@ -193,10 +193,45 @@ function entities.client.reset()
     end
 end
 
+function entities.client.update(dt)
+    local camBX, camBY, camBW, camBH = camera:getAABB()
+
+    local staticCullBX = camBX - entities.staticCullRadius
+    local staticCullBY = camBY - entities.staticCullRadius
+    local staticCullBW = camBW + entities.staticCullRadius*2
+    local staticCullBH = camBH + entities.staticCullRadius*2
+
+    local dynamicCullBX = camBX - entities.dynamicCullRadius
+    local dynamicCullBY = camBY - entities.dynamicCullRadius
+    local dynamicCullBW = camBW + entities.dynamicCullRadius*2
+    local dynamicCullBH = camBH + entities.dynamicCullRadius*2
+
+    for _, v in pairs(client.currentState.entities) do
+        if entities.client.defs[v.type].staic then
+            if v.x < staticCullBX or v.x > staticCullBX + staticCullBW
+            or v.y < staticCullBY or v.y > staticCullBY + staticCullBH then
+                v:destroy()
+            else
+                if v.destroyed then v:spawn() end
+                v:update(dt)
+            end
+        else
+            if v.x < dynamicCullBX or v.x > dynamicCullBX + dynamicCullBW
+            or v.y < dynamicCullBY or v.y > dynamicCullBY + dynamicCullBH then
+                v:destroy()
+            else
+                if v.destroyed then v:spawn() end
+                v:update(dt)
+            end
+        end
+    end
+end
+
 function entities.client.draw()
     for _, v in pairs(client.currentState.entities) do
-        v:draw()
+        if not v.destroyed then v:draw() end
     end
+
     if debugger.show and server.running then
         love.graphics.push()
         love.graphics.origin()

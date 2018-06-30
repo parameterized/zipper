@@ -29,17 +29,15 @@ end
 
 function love.update(dt)
     time = time + dt
-    if not (server.running and server.paused) then
-        if server.running then
-            server.update(dt)
-        end
-        if client.connected then
-            client.update(dt)
-        end
-        if gameState == 'playing' then
-            gameTime = gameTime + dt
-            player.update(dt)
-        end
+    if server.running then
+        server.update(dt)
+    end
+    if client.connected then
+        client.update(dt)
+    end
+    if not (server.running and server.paused) and gameState == 'playing' then
+        gameTime = gameTime + dt
+        player.update(dt)
     end
 end
 

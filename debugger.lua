@@ -85,10 +85,13 @@ function debugger.setVals()
     end
     if client.connected then
         ctr = 0
+        local ctrB = 0
         for _, v in pairs(client.currentState.entities) do
             ctr = ctr + 1
+            if not v.destroyed then ctrB = ctrB + 1 end
         end
         debugger.logVal('client entity container count', ctr)
+        debugger.logVal('client entity alive count', ctrB)
 
         debugger.logVal('client state count', #client.states)
     end

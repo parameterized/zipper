@@ -48,6 +48,18 @@ function base.server:update(dt)
     server.currentState.entities[self.id] = self:serialize()
 end
 
+function base.server:setState(state)
+    for _, v in pairs{'x', 'y'} do
+        self[v] = state[v]
+    end
+end
+
+function base.server:lerpState(a, b, t)
+    for _, v in pairs{'x', 'y'} do
+        self[v] = lerp(a[v], b[v], t)
+    end
+end
+
 function base.server:destroy()
     self.destroyed = true
     local container = self.static and entities.server.static.container
@@ -103,8 +115,30 @@ end
 
 function base.client:spawn()
     self.destroyed = false
-    client.currentState.entities[self.id] = self
     return self
+end
+
+function base.client:serialize()
+    return {
+        id = self.id, type = self.type,
+        x = self.x, y = self.y
+    }
+end
+
+function base.client:setState(state)
+    for _, v in pairs{'x', 'y'} do
+        self[v] = state[v]
+    end
+end
+
+function base.client:lerpState(a, b, t)
+    for _, v in pairs{'x', 'y'} do
+        self[v] = lerp(a[v], b[v], t)
+    end
+end
+
+function base.client:update(dt)
+    -- update self.x, self.y etc here if controlled by physics
 end
 
 function base.client:draw()
@@ -114,7 +148,8 @@ end
 
 function base.client:destroy()
     self.destroyed = true
-    client.currentState.entities[self.id] = nil
 end
+
+
 
 return base

@@ -116,7 +116,7 @@ end
 
 function server.addPlayer(name, clientId)
     local p = {
-        id = uuid(), name = name,
+        id = uuid(), name = name, score = 0,
         x = (math.random()*2-1)*256, y = (math.random()*2-1)*256, angle = 0,
         cursor = {x=0, y=0}
     }
@@ -141,9 +141,15 @@ end
 function server.addPoints(playerId, pts)
     local clientId = server.uuid2clientId[playerId]
     if clientId then
-        server.nutServer:sendRPC('setScore', player.score + pts, clientId)
+        local p = server.currentState.players[clientId]
+        if p then
+            p.score = p.score + pts
+            server.nutServer:sendRPC('setScore', p.score, clientId)
+        else
+            debugger.log('player not found in server.addPoints()')
+        end
     else
-        print('clientId not found in server.addPoints()');
+        debugger.log('clientId not found in server.addPoints()')
     end
 end
 

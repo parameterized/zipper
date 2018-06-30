@@ -26,14 +26,13 @@ end
 
 local client = {}
 
-client.rpcs = {}
-client.updates = {}
-
 function client:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
     local defaults = {updateRate=1/20}
+    defaults.rpcs = {}
+    defaults.updates = {}
     for k, v in pairs(defaults) do
         if not o[k] then o[k] = v end
     end
@@ -136,22 +135,21 @@ setmetatable(client, {__call = function(_, ...) return client:new(...) end})
 
 local server = {}
 
-server.rpcs = {
-    connect = function(self, data, clientId)
-        nut.log(clientId .. ' connected')
-    end,
-    disconnect = function(self, data, clientId)
-        self.clients[clientId] = nil
-        nut.log(clientId .. ' disconnected')
-    end
-}
-server.updates = {}
-
 function server:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
     local defaults = {port=1357, updateRate=1/20, connectionLimit=nil}
+    defaults.rpcs = {
+        connect = function(self, data, clientId)
+            nut.log(clientId .. ' connected')
+        end,
+        disconnect = function(self, data, clientId)
+            self.clients[clientId] = nil
+            nut.log(clientId .. ' disconnected')
+        end
+    }
+    defaults.updates = {}
     for k, v in pairs(defaults) do
         if not o[k] then o[k] = v end
     end

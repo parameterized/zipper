@@ -46,6 +46,34 @@ function hex.server:serialize()
     }
 end
 
+function hex.server:setState(state)
+    for _, v in pairs{'x', 'y', 'xv', 'yv', 'angle', 'hp'} do
+        self[v] = state[v]
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:setPosition(self.x, self.y)
+        self.body:setLinearVelocity(self.xv, self.yv)
+        self.body:setAngle(self.angle)
+    end
+end
+
+function hex.server:lerpState(a, b, t)
+    for _, v in pairs{'x', 'y', 'xv', 'yv'} do
+        self[v] = lerp(a[v], b[v], t)
+    end
+    for _, v in pairs{'angle'} do
+        self[v] = lerpAngle(a[v], b[v], t)
+    end
+    for _, v in pairs{'hp'} do
+        self[v] = b[v]
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:setPosition(self.x, self.y)
+        self.body:setLinearVelocity(self.xv, self.yv)
+        self.body:setAngle(self.angle)
+    end
+end
+
 function hex.server:update(dt)
     self.body:applyForce((math.random()*2 - 1)*1e4, (math.random()*2 - 1)*1e4)
     self.x, self.y = self.body:getPosition()
@@ -66,8 +94,12 @@ function hex.server:damage(d, clientId)
 end
 
 function hex.server:destroy()
-    self.fixture:destroy()
-    self.body:destroy()
+    if self.fixture and not self.fixture:isDestroyed() then
+        self.fixture:destroy()
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:destroy()
+    end
     base.server.destroy(self)
 end
 
@@ -88,6 +120,8 @@ function hex.client:new(o)
     o.id = o.id or uuid()
     o.x = o.x or 0
     o.y = o.y or 0
+    o.xv = o.xv or 0
+    o.yv = o.yv or 0
     o.angle = o.angle or hash2(o.x + 1/3, o.y)*2*math.pi
     o.hp = o.hp or 6
     setmetatable(o, self)
@@ -104,6 +138,45 @@ function hex.client:spawn()
     self.body:setAngularDamping(10)
     self.body:setAngle(self.angle)
     return base.client.spawn(self)
+end
+
+function hex.client:setState(state)
+    for _, v in pairs{'x', 'y', 'xv', 'yv', 'angle', 'hp'} do
+        self[v] = state[v]
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:setPosition(self.x, self.y)
+        self.body:setLinearVelocity(self.xv, self.yv)
+        self.body:setAngle(self.angle)
+    end
+end
+
+function hex.client:lerpState(a, b, t)
+    for _, v in pairs{'x', 'y', 'xv', 'yv'} do
+        self[v] = lerp(a[v], b[v], t)
+    end
+    for _, v in pairs{'angle'} do
+        self[v] = lerpAngle(a[v], b[v], t)
+    end
+    for _, v in pairs{'hp'} do
+        self[v] = b[v]
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:setPosition(self.x, self.y)
+        self.body:setLinearVelocity(self.xv, self.yv)
+        self.body:setAngle(self.angle)
+    end
+end
+
+function hex.client:update(dt)
+    -- todo: simulate with future action prediction from server
+    --[[
+    self.body:applyForce((math.random()*2 - 1)*1e4, (math.random()*2 - 1)*1e4)
+    self.x, self.y = self.body:getPosition()
+    self.xv, self.yv = self.body:getLinearVelocity()
+    self.angle = self.body:getAngle()
+    ]]
+    base.client.update(self, dt)
 end
 
 function hex.client:draw()
@@ -134,9 +207,15 @@ function hex.client:draw()
 end
 
 function hex.client:destroy()
-    self.fixture:destroy()
-    self.body:destroy()
+    if self.fixture and not self.fixture:isDestroyed() then
+        self.fixture:destroy()
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:destroy()
+    end
     base.client.destroy(self)
 end
+
+
 
 return hex

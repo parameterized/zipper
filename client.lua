@@ -49,6 +49,7 @@ function client.connect(ip, port)
                 end
                 for _, v in pairs(data.entities) do
                     local ent = entities.client.defs[v.type]:new(v):spawn()
+                    client.currentState.entities[ent.id] = ent
                 end
             else
                 debugger.log('error decoding client rpc add')
@@ -121,6 +122,7 @@ function client.connect(ip, port)
             v.fixture:destroy()
             v.body:destroy()
         end
+        collectgarbage()
     end
     client.currentState = client.newState()
 
@@ -215,15 +217,7 @@ function client.update(dt)
                     local obj = client.currentState.entities[k]
                     if obj then
                         if obj.type == 'hex' then
-                            obj.x = lerp(v.x, v2.x, t)
-                            obj.y = lerp(v.y, v2.y, t)
-                            obj.xv = lerp(v.xv, v2.xv, t)
-                            obj.yv = lerp(v.yv, v2.yv, t)
-                            obj.angle = lerpAngle(v.angle, v2.angle, t)
-                            obj.hp = v2.hp
-
-                            obj.body:setPosition(obj.x, obj.y)
-                            obj.body:setAngle(obj.angle)
+                            obj:lerpState(v, v2, t)
                         end
                         -- don't update static entities
                     end
@@ -258,24 +252,15 @@ function client.update(dt)
                 local obj = client.currentState.entities[k]
                 if obj then
                     if obj.type == 'hex' then
-                        obj.x = v.x
-                        obj.y = v.y
-                        obj.xv = v.xv
-                        obj.yv = v.yv
-                        obj.angle = v.angle
-                        obj.hp = v.hp
-
-                        obj.body:setPosition(obj.x, obj.y)
-                        obj.body:setAngle(obj.angle)
+                        obj:setState(v)
                     end
                 end
             end
         end
     end
 
-    if gameState == 'playing' then
-        physics.client.update(dt)
-    end
+    physics.client.update(dt)
+    entities.client.update(dt)
 end
 
 function client.sendMessage(msg)

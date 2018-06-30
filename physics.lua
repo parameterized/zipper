@@ -81,21 +81,7 @@ function physics.client.postUpdatePush(f)
 end
 
 function physics.client.beginContact(a, b, coll)
-    --[[
-    for _, v in pairs({{a, b}, {b, a}}) do
-        local va = v[1]
-        local vb = v[2]
-        local uda = va:getUserData() or {}
-        local udb = vb:getUserData() or {}
-        if uda.type == 'bullet' then
-            if udb.enemy then
-                physics.client.postUpdatePush(function() bullets.client.destroy(uda.id) end)
-                physics.client.postUpdatePush(function() udb:damage(1) end)
-            end
-            break
-        end
-    end
-    ]]
+    
 end
 
 function physics.client.endContact(a, b, coll)

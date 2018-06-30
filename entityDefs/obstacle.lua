@@ -41,8 +41,12 @@ function obstacle.server:spawn()
 end
 
 function obstacle.server:destroy()
-    self.fixture:destroy()
-    self.body:destroy()
+    if self.fixture and not self.fixture:isDestroyed() then
+        self.fixture:destroy()
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:destroy()
+    end
     base.server.destroy(self)
 end
 
@@ -77,9 +81,15 @@ function obstacle.client:draw()
 end
 
 function obstacle.client:destroy()
-    self.fixture:destroy()
-    self.body:destroy()
+    if self.fixture and not self.fixture:isDestroyed() then
+        self.fixture:destroy()
+    end
+    if self.body and not self.body:isDestroyed() then
+        self.body:destroy()
+    end
     base.client.destroy(self)
 end
+
+
 
 return obstacle
