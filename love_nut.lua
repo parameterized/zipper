@@ -4,7 +4,7 @@ local socket = require 'socket'
 local nut = {
     logMessages = false,
     logErrors = true,
-    _VERSION = 'LoveNUT 0.1.0-dev'
+    _VERSION = 'LoveNUT 0.1.1'
 }
 
 function nut.log(msg)

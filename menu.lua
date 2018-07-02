@@ -120,8 +120,10 @@ menu.nameInput = menu.addInput{state='play', text='Player Name', value=menuDefau
 menu.addBtn{state='play', text='Singleplayer', x=ssx/2 - 180, y=460, action=function()
     chat.log = {}
     -- todo: choose open port
-    server.start(menu.portInput.value, true)
-    client.connect('127.0.0.1', menu.portInput.value)
+    -- remove whitespace
+    local port = menu.portInput.value:gsub("%s+", "")
+    server.start(port, true)
+    client.connect('127.0.0.1', port)
     menu.state = 'connect'
     menu.connectInfo.text = 'Starting Game'
 end}
@@ -130,14 +132,17 @@ menu.portInput = menu.addInput{state='play', text='Port', value=menuDefaults.por
 menu.addBtn{state='play', text='Host', x=ssx/2 + 180 - 60, y=460, action=function()
     chat.log = {}
     -- todo: notify if not open or other err
-    server.start(menu.portInput.value)
-    client.connect(menu.ipInput.value, menu.portInput.value)
+    local port = menu.portInput.value:gsub("%s+", "")
+    server.start(port)
+    client.connect('127.0.0.1', port)
     menu.state = 'connect'
     menu.connectInfo.text = 'Starting Game'
 end}
 menu.addBtn{state='play', text='Join', x=ssx/2 + 180 + 60, y=460, action=function()
     chat.log = {}
-    client.connect(menu.ipInput.value, menu.portInput.value)
+    local ip = menu.ipInput.value:gsub("%s+", "")
+    local port = menu.portInput.value:gsub("%s+", "")
+    client.connect(ip, port)
     menu.state = 'connect'
     menu.connectInfo.text = 'Starting Game'
 end}

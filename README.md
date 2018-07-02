@@ -2,11 +2,12 @@
 # Zipper
 WIP top-down game made with Love2D
 
+Current Version: 0.2.0<br>
 Uses Love2D version 11.1.0
 
-![](https://i.imgur.com/Sgtr70L.png)
+![](https://i.imgur.com/AbSoWam.png)
 
-[Demo Video](https://streamable.com/ycsai)
+[Demo Video](https://streamable.com/ee7xr)
 
 ## Running
 Windows builds can be found on the [releases](https://github.com/parameterized/zipper/releases) page
@@ -18,7 +19,7 @@ If you're on Windows, the easiest way to run is to drag the folder containing ma
 - WASD to move
 - Left Shift to sprint
 - Left Mouse Button to shoot
-- ` (tilde) to open console (no commands yet)
 - F1 to show debug info
-- F2 for free fire
-- F3 to push around enemies
+- F2 to push around enemies if hosting
+- \` (tilde) to open console
+    - "freefire", "interpolate", "parallax"
