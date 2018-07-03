@@ -62,11 +62,11 @@ function player.update(dt)
 
     if not debugger.console.active and not chat.active then
         local dx, dy = 0, 0
-    	dx = dx + (love.keyboard.isDown('d') and 1 or 0)
-    	dx = dx + (love.keyboard.isDown('a') and -1 or 0)
-    	dy = dy + (love.keyboard.isDown('w') and -1 or 0)
-    	dy = dy + (love.keyboard.isDown('s') and 1 or 0)
-        local spd = player.spd*(love.keyboard.isDown('lshift') and 2.5 or 1)
+    	dx = dx + (love.keyboard.isScancodeDown('d') and 1 or 0)
+    	dx = dx + (love.keyboard.isScancodeDown('a') and -1 or 0)
+    	dy = dy + (love.keyboard.isScancodeDown('w') and -1 or 0)
+    	dy = dy + (love.keyboard.isScancodeDown('s') and 1 or 0)
+        local spd = player.spd*(love.keyboard.isScancodeDown('lshift') and 2.5 or 1)
         if not (dx == 0 and dy == 0) then
             local a = math.atan2(dx, dy) - math.pi/2
             player.body:applyForce(math.cos(a)*spd, -math.sin(a)*spd)
