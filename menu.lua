@@ -351,7 +351,7 @@ function menu.keypressed(k, scancode, isrepeat)
             menu.activeInput = nil
         elseif k == 'backspace' then
             menu.activeInput.value = menu.activeInput.value:sub(0, math.max(menu.activeInput.value:len()-1, 0))
-        elseif k == 'v' and (love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl')) then
+        elseif k == 'v' and (love.keyboard.isScancodeDown('lctrl') or love.keyboard.isScancodeDown('rctrl')) then
             local paste = love.system.getClipboardText()
             for v in paste:gmatch('.') do
                 menu.activeInput.value = menu.activeInput.value .. v
