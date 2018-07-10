@@ -44,6 +44,14 @@ function debugger.console.submit()
         client.interpolate = not client.interpolate
     elseif cmd == 'parallax' then
         parallax = not parallax
+    elseif cmd:sub(0, 3) == 'tp ' then
+        -- todo: tp to player, handle mistakes
+        -- todo: change physics scale?
+        local loc = cmd:sub(4)
+        local x, y = loc:match('^(%S*) (%S*)$')
+        x, y = tonumber(x), tonumber(y)
+        x, y = x*100, y*100
+        player.body:setPosition(x, y)
     end
 
     debugger.console.lastVal = debugger.console.val

@@ -15,7 +15,7 @@ function server.start(port, singleplayer)
             end
             server.removePlayer(clientId)
 
-            self.clients[clientId] = nil
+            --self.clients[clientId] = nil
             nut.log(clientId .. ' disconnected')
         end,
         requestPlayer = function(self, data, clientId)
