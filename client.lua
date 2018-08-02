@@ -18,7 +18,16 @@ function client.connect(ip, port)
             chat.addMsg(data)
         end,
         setScore = function(self, data)
+            local lastScore = player.score or 0
             player.score = tonumber(data)
+            if player.score > lastScore then
+                player.xp = player.xp + (player.score - lastScore)
+                local levelMaxXp = 5 + player.level*2
+                if player.xp >= levelMaxXp then
+                    player.xp = 0
+                    player.level = player.level + 1
+                end
+            end
         end,
         serverClosed = function(self, data)
             -- todo: show message in game

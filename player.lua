@@ -8,6 +8,8 @@ function player.load()
     player.lastFireTime = 0
     player.freeFire = false
     player.spd = 2e3
+    player.level = 0
+    player.xp = 0
 
     player.body = love.physics.newBody(physics.client.world, 0, 0, 'dynamic')
     player.shape = love.physics.newRectangleShape(50, 50)

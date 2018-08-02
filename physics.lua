@@ -81,7 +81,7 @@ function physics.client.postUpdatePush(f)
 end
 
 function physics.client.beginContact(a, b, coll)
-    
+
 end
 
 function physics.client.endContact(a, b, coll)
