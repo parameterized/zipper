@@ -8,7 +8,8 @@ function client.connect(ip, port)
     client.nutClient = nut.client()
     client.nutClient:addRPCs{
         returnPlayer = function(self, data)
-            if pcall(function() data = json.decode(data) end) then
+            local ok, data = pcall(json.decode, data)
+            if ok then
                 client.startGame(data)
             else
                 debugger.log('err decoding client rpc returnPlayer')
@@ -29,7 +30,8 @@ function client.connect(ip, port)
             client.close()
         end,
         add = function(self, data)
-            if pcall(function() data = json.decode(data) end) then
+            local ok, data = pcall(json.decode, data)
+            if ok then
                 for _, v in pairs(data.players) do
                     v.body = love.physics.newBody(physics.client.world, v.x, v.y, 'dynamic')
                     v.shape = love.physics.newRectangleShape(50, 50)
@@ -56,7 +58,8 @@ function client.connect(ip, port)
             end
         end,
         remove = function(self, data)
-            if pcall(function() data = json.decode(data) end) then
+            local ok, data = pcall(json.decode, data)
+            if ok then
                 for _, id in pairs(data.players) do
                     if id ~= player.id then
                         local p = client.currentState.players[id]
@@ -84,7 +87,8 @@ function client.connect(ip, port)
             end
         end,
         stateUpdate = function(self, data)
-            if pcall(function() data = json.decode(data) end) then
+            local ok, data = pcall(json.decode, data)
+            if ok then
                 client.serverTime = data.time
                 -- todo: delete old states (or make replay feature)
                 -- todo: multiple states in update -

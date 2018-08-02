@@ -14,8 +14,7 @@ function server.start(port, singleplayer)
                 self:sendRPC('chatMsg', string.format('Server: %s disconnected', pname))
             end
             server.removePlayer(clientId)
-
-            --self.clients[clientId] = nil
+            
             nut.log(clientId .. ' disconnected')
         end,
         requestPlayer = function(self, data, clientId)
@@ -46,14 +45,16 @@ function server.start(port, singleplayer)
         end,
         setPlayer = function(self, data, clientId)
             -- todo: more validation (value types)
-            if pcall(function() data = json.decode(data) end) then
+            local ok, data = pcall(json.decode, data)
+            if ok then
                 server.currentState.players[clientId] = data
             else
                 debugger.log('error decoding server rpc setPlayer')
             end
         end,
         spawnBullet = function(self, data, clientId)
-            if pcall(function() data = json.decode(data) end) then
+            local ok, data = pcall(json.decode, data)
+            if ok then
                 bullets.server.spawn(data)
             else
                 debugger.log('error decoding server rpc spawnBullet')
