@@ -3,11 +3,11 @@ player = {}
 
 function player.load()
     player.name = 'Player'
-    player.score = 0
     player.fireRate = 20
     player.lastFireTime = 0
     player.freeFire = false
     player.spd = 2e3
+    player.score = 0
     player.level = 0
     player.xp = 0
     player.perkPoint = 0
@@ -36,7 +36,8 @@ end
 
 function player.serialize()
     local p = {
-        id = player.id, name = player.name, score = player.score,
+        id = player.id, name = player.name,
+        score = player.score, level = player.level, xp = player.xp,
         x = player.body:getX(), y = player.body:getY(), angle = player.body:getAngle(),
         cursor = {x=player.cursor.x, y=player.cursor.y}
     }
@@ -108,6 +109,8 @@ function player.draw()
             local font = fonts.f32
             love.graphics.setFont(font)
             love.graphics.print(v.name, v.x - font:getWidth(v.name)/2, v.y + 50)
+            local text = tostring(v.level)
+            love.graphics.print(text, v.x - font:getWidth(text)/2, v.y - 50 - font:getHeight())
         end
     end
     -- local player
@@ -120,4 +123,7 @@ function player.draw()
     love.graphics.setFont(font)
     love.graphics.print(player.name, player.body:getX() - font:getWidth(player.name)/2,
         player.body:getY() + 50)
+    local text = tostring(player.level)
+    love.graphics.print(text, player.body:getX() - font:getWidth(text)/2,
+        player.body:getY() - 50 - font:getHeight())
 end

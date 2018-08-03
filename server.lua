@@ -47,7 +47,11 @@ function server.start(port, singleplayer)
         setPlayer = function(self, data, clientId)
             -- todo: more validation (value types)
             if pcall(function() data = json.decode(data) end) then
-                server.currentState.players[clientId] = data
+                --server.currentState.players[clientId] = data
+                -- player controlled variables
+                for _, v in pairs{'x', 'y', 'angle', 'cursor'} do
+                    server.currentState.players[clientId][v] = data[v]
+                end
             else
                 debugger.log('error decoding server rpc setPlayer')
             end
@@ -74,6 +78,7 @@ function server.start(port, singleplayer)
         local stateUpdate = server.newState()
         stateUpdate.time = gameTime
         for _, v in pairs(server.currentState.players) do
+            print(v.score, v.level)
             -- don't send clientIds - index by uuid
             stateUpdate.players[v.id] = v
         end
@@ -116,7 +121,8 @@ end
 
 function server.addPlayer(name, clientId)
     local p = {
-        id = uuid(), name = name, score = 0,
+        id = uuid(), name = name,
+        score = 0, level = 0, xp = 0,
         x = (math.random()*2-1)*256, y = (math.random()*2-1)*256, angle = 0,
         cursor = {x=0, y=0}
     }
@@ -144,7 +150,15 @@ function server.addPoints(playerId, pts)
         local p = server.currentState.players[clientId]
         if p then
             p.score = p.score + pts
-            server.nutServer:sendRPC('setScore', p.score, clientId)
+            --server.nutServer:sendRPC('setScore', p.score, clientId)
+            p.xp = p.xp + pts
+            repeat
+                local levelMaxXp = 5 + p.level*2
+                if p.xp >= levelMaxXp then
+                    p.level = p.level + 1
+                    p.xp = p.xp - levelMaxXp
+                end
+            until p.xp < levelMaxXp
         else
             debugger.log('player not found in server.addPoints()')
         end
