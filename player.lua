@@ -109,7 +109,7 @@ function player.draw()
             local font = fonts.f32
             love.graphics.setFont(font)
             love.graphics.print(v.name, v.x - font:getWidth(v.name)/2, v.y + 50)
-            local text = tostring(v.level)
+            local text = 'Lvl. ' .. tostring(v.level)
             love.graphics.print(text, v.x - font:getWidth(text)/2, v.y - 50 - font:getHeight())
         end
     end

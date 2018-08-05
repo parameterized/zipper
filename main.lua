@@ -48,6 +48,7 @@ function love.mousepressed(x, y, btn, isTouch)
     if gameState == 'playing' and not menu.overlayActive then
         love.mouse.setCursor(cursors.crosshairDown)
         player.mousepressed(x, y, btn)
+        hud.mousepressed(x, y, btn)
     end
 end
 

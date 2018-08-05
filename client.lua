@@ -206,6 +206,9 @@ function client.update(dt)
 
                     if k == player.id then
                         player.score = obj.score
+                        if player.level < obj.level then
+                            player.perkPoint = player.perkPoint + (obj.level - player.level)
+                        end
                         player.level = obj.level
                         player.xp = obj.xp
                     end
