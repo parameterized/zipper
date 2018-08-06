@@ -18,6 +18,7 @@ canvases = {
 fonts = {
     f14 = love.graphics.newFont(14),
     f18 = love.graphics.newFont(18),
+    f24 = love.graphics.newFont(24),
     f32 = love.graphics.newFont(32),
     f48 = love.graphics.newFont(48)
 }

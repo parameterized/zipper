@@ -11,7 +11,7 @@ function player.load()
     player.level = 0
     player.xp = 0
     player.perkPoint = 0
-    player.perkUse = 0
+    player.perks = {a=0, b=0, c=0}
 
     player.body = love.physics.newBody(physics.client.world, 0, 0, 'dynamic')
     player.shape = love.physics.newRectangleShape(50, 50)

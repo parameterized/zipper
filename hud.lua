@@ -14,30 +14,37 @@ hud.perkButtons = {
         x = perkBoxX+perkBoxW*.1,
         y = perkBoxY+perkBoxH*.2,
         w = perkButtonW,
-        h = perkButtonH
+        h = perkButtonH,
+        action = function()
+            player.perks.a = player.perks.a + 1
+        end
     },
     {
         x = perkBoxX+perkBoxW*.1,
         y = perkBoxY+perkBoxH*.2 + perkButtonH*2,
         w = perkButtonW,
-        h = perkButtonH
-    }
+        h = perkButtonH,
+        action = function()
+            player.perks.b = player.perks.b + 1
+        end
+    },
+    {
+        x = perkBoxX+perkBoxW*.1,
+        y = perkBoxY+perkBoxH*.2 + perkButtonH*4,
+        w = perkButtonW,
+        h = perkButtonH,
+        action = function()
+            player.perks.c = player.perks.c + 1
+        end
+    },
 }
 
 function hud.mousepressed(mx, my, btn)
-    --[[
-    local perkBoxW = ssx*.3
-    local perkBoxH = ssy*.4
-    local perkBoxX = ssx*.05
-    local perkBoxY = ssy/5
-    local x, y, w, h = perkBoxX+perkBoxW*.1, perkBoxY+perkBoxH*.2, perkBoxW/3, perkBoxH/16
-    if mx > x and mx < x + w and my > y and my < y + h then
-        player.perkPoint = player.perkPoint - 1
-    end
-    ]]
     for _, v in pairs(hud.perkButtons) do
-        if mx > v.x and my < v.x + v.w and my > v.y and my < v.y + v.h then
+        if mx > v.x and mx < v.x + v.w and my > v.y and my < v.y + v.h then
             player.perkPoint = player.perkPoint - 1
+            v.action()
+            break
         end
     end
 end
@@ -65,36 +72,6 @@ function hud.draw()
         (barW - padX*2)*percent, barH - padY*2
     )
 
-    --todo: perks/level up menu
-
-    --[==[
-    shows perkPoint for debugging
-    font = fonts.f14
-    love.graphics.setFont(font)
-    love.graphics.setColor(1, 0, 1)
-    love.graphics.print(player.perkPoint, ssx/2, ssy/2)
-    ]==]
-
-    --gives player a perkPoint upon level up
-    -- in client
-    --[[
-    if player.level > player.perkPoint then
-        if player.perkUse == player.level then
-
-        else
-            player.perkPoint = player.perkPoint+1
-        end
-    end
-    print(player.perkPoint)
-]]
-    --draws perkBox when player has any perkPoints
-    --[[
-    local perkBoxW = ssx*.3
-    local perkBoxH = ssy*.4
-    local perkBoxX = ssx*.05
-    local perkBoxY = ssy/5
-    print('perkpoint ' .. player.perkPoint)
-    ]]
     if player.perkPoint >= 1 then
         font = fonts.f14
         love.graphics.setFont(font)
@@ -119,33 +96,7 @@ function hud.draw()
             end
             love.graphics.rectangle('fill', v.x, v.y, v.w, v.h)
         end
-
-        --[[
-        love.graphics.setColor(0, 0, 1)
-        local x, y, w, h = perkBoxX+perkBoxW*.1, perkBoxY+perkBoxH*.2, perkBoxW/3, perkBoxH/16
-        love.graphics.rectangle('fill', x, y, w, h)
-        local mx, my = love.mouse.getPosition()
-        mx = mx/graphicsScale
-        my = my/graphicsScale
-        if mx > x and mx < x + w and my > y and my < y + h then
-            love.graphics.setColor(0, 0, 0.8)
-            love.graphics.rectangle('fill', x, y, w, h)
-        end
-
-        love.graphics.setColor(0, 0, 1)
-        local x, y, w, h = perkBoxX+perkBoxW*.1, perkBoxY+perkBoxH*.2, perkBoxW/3, perkBoxH/16
-        love.graphics.rectangle('fill', x, y + h*2, w, h)
-        local mx, my = love.mouse.getPosition()
-        mx = mx/graphicsScale
-        my = my/graphicsScale
-        if mx > x and mx < x + w and my > y and my < y + h then
-            love.graphics.setColor(0, 0, 0.8)
-            love.graphics.rectangle('fill', x, y + h*2, w, h)
-        end
-        ]]
     end
-
-
 
     --xp bar outline
     love.graphics.setColor(0, 1, 0)
@@ -168,4 +119,18 @@ function hud.draw()
         barX + barW/2 - font:getWidth(text)/2,
         barY + barH/2 - font:getHeight(text)/2 + 15
     )
+
+    -- draw perks
+
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.setFont(fonts.f24)
+    love.graphics.print('Perks:', ssx/16, ssy*5/7)
+    local perkNames = {'a', 'b', 'c'}
+    local ctr = 0
+    for _, perkName in pairs(perkNames) do
+        ctr = ctr + 1
+        local perkCount = player.perks[perkName]
+        local text = tostring(perkName) .. ': ' .. tostring(perkCount)
+        love.graphics.print(text, ssx/16, ssy*5/7 + ctr*30 + 6)
+    end
 end

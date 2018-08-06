@@ -78,7 +78,6 @@ function server.start(port, singleplayer)
         local stateUpdate = server.newState()
         stateUpdate.time = gameTime
         for _, v in pairs(server.currentState.players) do
-            print(v.score, v.level)
             -- don't send clientIds - index by uuid
             stateUpdate.players[v.id] = v
         end
